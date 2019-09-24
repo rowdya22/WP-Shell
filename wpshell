@@ -44,7 +44,7 @@ Type $COL_GREEN\"wpshell\"$COL_RESET to return to this menu:
 function wpreplacecore(){
 version=$(grep 'wp_version ' wp-includes/version.php | cut -d\' -f 2)
 
-echo -e "$COL_WHITE\rFound Version:$version. Replacing existing core with fresh $version files...\n$COL_RESET"
+echo -e "$COL_WHITE\rFound Version: $version. Replacing existing core with fresh $version files...\n$COL_RESET"
 
 if [[ ! -e "wordpress-$version.tar.gz" ]]; then
 	if ! wget -q "https://wordpress.org/wordpress-$version.tar.gz"; then
@@ -93,7 +93,7 @@ wp --skip-plugins --skip-themes core update-db --quiet
 
 ### WGET LATEST ###
 function wpcorelatest() {
-###  version=$(grep 'wp_version ' wp-includes/version.php | cut -d\' -f 2)
+version=$(grep 'wp_version ' wp-includes/version.php | cut -d\' -f 2)
 
 echo -e "$COL_WHITE\rReplacing existing $version core with latest version...\n$COL_RESET"
 
