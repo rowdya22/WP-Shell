@@ -226,7 +226,7 @@ find2perl -name "wp-config.php" -exec grep --color -iHn DB_NAME {} \; | perl
 }
 
 ### Find error logs modified in the last 10 days and show the last 10 lines
-function errl1(){
+function errl(){
 find -maxdepth 1 -mtime -10 -type f -iname "error_log*" -print0 | xargs -0 tail
 }
 
