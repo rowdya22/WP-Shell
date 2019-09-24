@@ -32,6 +32,7 @@ Type $COL_GREEN\"wpshell\"$COL_RESET to return to this menu:
   $COL_GREEN ext          $COL_RESET - Extract Common File Types (Use: ext filename.ext)
   $COL_GREEN dirsize      $COL_RESET - Show Size of Directory
   $COL_GREEN fcount       $COL_RESET - List Number of Files in Current Directory
+  $COL_GREEN errl         $COL_RESET - Show Recent Errors in error_log
   $COL_GREEN wpcleanup    $COL_RESET - Find and Remove Files Tagged With WPSHELL
   "
   wpconfigCheck
@@ -220,6 +221,11 @@ find -printf x|wc -c
 ### LIST ALL WORDPRESS DATABASES ###
 function dblist() {
 find2perl -name "wp-config.php" -exec grep --color -iHn DB_NAME {} \; | perl
+}
+
+### Find error logs modified in the last 10 days and show the last 10 lines
+function errl1(){
+find -maxdepth 1 -mtime -10 -type f -iname "error_log*" -print0 | xargs -0 tail
 }
 
 ########## BACKEND FUNCTIONS ##########
