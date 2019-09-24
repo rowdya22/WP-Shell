@@ -1,5 +1,55 @@
 #!/bin/bash
 
+# Colors
+ESC_SEQ="\x1b["
+COL_RESET=$ESC_SEQ"m"
+
+### BACKGROUND ###
+BK_BLACK=$ESC_SEQ"48;5;16m"
+
+### MAJOR COLORS ###
+COL_RED=$ESC_SEQ"38;5;09;01m"
+COL_GREEN=$ESC_SEQ"38;5;10;01m"
+COL_PURPLE=$ESC_SEQ"38;5;57;01m"
+COL_BLUE=$ESC_SEQ"38;5;27;01m"
+COL_MAGENTA=$ESC_SEQ"38;5;13;01m"
+COL_CYAN=$ESC_SEQ"38;5;14;01m"
+COL_ORANGE=$ESC_SEQ"38;5;208;01m"
+COL_CHERRY=$ESC_SEQ"38;5;124;01m"
+COL_FORREST=$ESC_SEQ"38;5;22;01m"
+COL_WHITE=$ESC_SEQ"38;5;231;01m"
+
+### MINOR COLORS ###
+COL_MRED=$ESC_SEQ"38;5;09;02m"
+COL_MGREEN=$ESC_SEQ"38;5;34;02m"
+COL_MPURPLE=$ESC_SEQ"38;5;57;02m"
+COL_MBLUE=$ESC_SEQ"38;5;27;02m"
+COL_MMAGENTA=$ESC_SEQ"38;5;13;02m"
+COL_MCYAN=$ESC_SEQ"38;5;14;02m"
+COL_MORANGE=$ESC_SEQ"38;5;208;02m"
+COL_MCHERRY=$ESC_SEQ"38;5;124;02m"
+COL_MFORREST=$ESC_SEQ"38;5;22;02m"
+COL_MWHITE=$ESC_SEQ"38;5;231;02m"
+
+### START EXAMPLE COLOR ###
+#echo -e "\x1b[38;5;{COLORID};01m TEXT  \x1b[m"
+### END EXAMPLE COLOR ###
+
+function bashcolors(){
+echo -e "$BK_BLACK
+$COL_RED \$COL_RED         $COL_MRED \$COL_MRED
+$COL_GREEN \$COL_GREEN     $COL_MGREEN \$COL_MGREEN
+$COL_PURPLE \$COL_PURPLE   $COL_MPURPLE \$COL_MPURPLE
+$COL_BLUE \$COL_BLUE       $COL_MBLUE \$COL_MBLUE
+$COL_MAGENTA \$COL_MAGENTA $COL_MMAGENTA \$COL_MMAGENTA
+$COL_CYAN \$COL_CYAN       $COL_MCYAN \$COL_MCYAN
+$COL_ORANGE \$COL_ORANGE   $COL_MORANGE \$COL_MORANGE
+$COL_CHERRY \$COL_CHERRY   $COL_MCHERRY \$COL_MCHERRY
+$COL_FORREST \$COL_FORREST $COL_MFORREST \$COL_MFORREST
+$COL_WHITE \$COL_WHITE     $COL_MWHITE \$COL_MWHITE
+$COL_RESET"
+}
+
 function wpshell(){
 clear
 echo -e "
@@ -118,7 +168,7 @@ getWPinfo
 
 echo "Starting export..."
 file="$2"
-[[ -z "$file" ]] && file="QWPCLI_$dbname"_$(now).sql
+[[ -z "$file" ]] && file="WPSHELL_$dbname"_$(now).sql
 mysqldump -h "$dbhost" -u "$dbuser" -p"$dbpass" "$dbname" > "$file" && echo -e "Exported database '$dbname' to file '$file'\n" || echo -e "Failed to export database '$dbname' to file '$file'!\n"
 }
 
