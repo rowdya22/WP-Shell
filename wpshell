@@ -17,19 +17,30 @@ COL_WHITE=$ESC_SEQ"38;5;231;02m"
 
 function wpshell(){
 clear
-echo -e "
+echo -e "$COL_GREEN
+ _       ______  _____ __  __________    __ 
+| |     / / __ \/ ___// / / / ____/ /   / / 
+| | /| / / /_/ /\__ \/ /_/ / __/ / /   / /  
+| |/ |/ / ____/___/ / __  / /___/ /___/ /___
+|__/|__/_/    /____/_/ /_/_____/_____/_____/ $COL_RESET
 Type $COL_GREEN\"wpshell\"$COL_RESET to return to this menu:                         
-  $COL_GREEN wpReplaceCore $COL_RESET  - Scan for WP Version and Backup/Replace Core Files
-  $COL_GREEN coreLatest    $COL_RESET  - Backup/Replace WP Core Files With Latest Version
-  $COL_GREEN dbexport      $COL_RESET  - Export WP Database
+  $COL_GREEN wpreplacecore$COL_RESET - Scan for WP Version and Backup/Replace Core Files
+  $COL_GREEN wpcorelatest $COL_RESET - Backup/Replace WP Core Files With Latest Version
+  $COL_GREEN dblist       $COL_RESET - Search Below Folders and List WP DB Names
+  $COL_GREEN dbxport      $COL_RESET - Export WP Database
+  $COL_GREEN ext          $COL_RESET - Extract Common File Types (Use: ext filename.ext)
+  $COL_GREEN dirsize      $COL_RESET - Show Size of Directory
+  $COL_GREEN fcount       $COL_RESET - List Number of Files in Current Directory
+  $COL_GREEN wpcleanup    $COL_RESET - Find and Remove Files Tagged With WPSHELL
   "
+  wpconfigCheck
 }
 
 ### REPLACE CORE WITH SAME VERSION ###
-function wpReplaceCore(){
+function wpreplacecore(){
 version=$(grep 'wp_version ' wp-includes/version.php | cut -d\' -f 2)
 
-echo -e "$COL_WHITE\rFound $version. Replacing existing core with fresh $version files\n$COL_RESET"
+echo -e "$COL_WHITE\rFound Version:$version. Replacing existing core with fresh $version files...\n$COL_RESET"
 
 if [[ ! -e "wordpress-$version.tar.gz" ]]; then
 	if ! wget -q "https://wordpress.org/wordpress-$version.tar.gz"; then
@@ -75,11 +86,12 @@ fi
 echo -e "\nCompressing old WordPress core...$COL_GREEN" && tar -zcf "$oldWP".tar.gz "$oldWP" --remove-files && echo -e "Success:$COL_RESET Old WordPress files located$COL_CYAN $oldWP.tar.gz $COL_RESET"
 wp --skip-plugins --skip-themes core update-db --quiet
 }
+
 ### WGET LATEST ###
-function coreLatest() {
+function wpcorelatest() {
 ###  version=$(grep 'wp_version ' wp-includes/version.php | cut -d\' -f 2)
 
-echo -e "$COL_WHITE\rReplacing existing $version core with latest version\n$COL_RESET"
+echo -e "$COL_WHITE\rReplacing existing $version core with latest version...\n$COL_RESET"
 
 if [[ ! -e "wordpress-$wpver.tar.gz" ]]; then
 	if ! wget -q "https://wordpress.org/wordpress-latest.tar.gz"; then
@@ -137,6 +149,49 @@ file="$2"
 mysqldump -h "$dbhost" -u "$dbuser" -p"$dbpass" "$dbname" > "$file" && echo -e "$COL_GREEN\rSuccess:$COL_RESET Exported database '$dbname' to file '$file'\n $COL_RESET" || echo -e "$COL_RED\rFailed to export database '$dbname' to file '$file'!\n $COL_RESET"
 }
 
+### CLEAN UP WPSHELL FILES ###
+function wpcleanup(){
+find ~/public_html*/ -maxdepth 5 \( -name "WPSHELL_*" -o -name ".WPSHELL_*" -o -name "wpshell" \)|xargs rm -rfv
+}
+
+### Handy Extraction Program ###
+function ext(){
+    if [ -f $1 ] ; then
+        case $1 in
+            *.tar.bz2)   tar xvjf $1     ;;
+            *.tar.gz)    tar xvzf $1     ;;
+            *.bz2)       bunzip2 $1      ;;
+            *.rar)       unrar x $1      ;;
+            *.gz)        gunzip $1       ;;
+            *.tar)       tar xvf $1      ;;
+            *.tbz2)      tar xvjf $1     ;;
+            *.xz)        tar xvJf $1     ;;
+            *.tgz)       tar xvzf $1     ;;
+            *.zip)       unzip $1        ;;
+            *.Z)         uncompress $1   ;;
+            *.7z)        7z x $1         ;;
+            *)           echo "$COL_CYAN\nWarning:$COL_RESET'$1' Cannot be extracted! Supported formats are .tar.bz2, .tar.gz, .bz2, .rar, .gz, .tar, .tbz2, .xz, .tgz, .zip, .Z, .7z" ;;
+        esac
+    else
+        echo "'$1' is not a valid file! Syntax:$COL_CYAN ext filename.extention$COL_RESET or$COL_CYAN ext example.tar.gz $COL_RESET"
+    fi
+}
+
+### LIST SIZE OF CURRENT DIR ###
+function dirsize() {
+du -ah --max-depth=1 | sort -h
+}
+
+### LIST NUMBER OF FILES IN CURRENT FOLDER ###
+function fcount() {
+find -printf x|wc -c
+}
+
+### LIST ALL WORDPRESS DATABASES ###
+function dblist() {
+find2perl -name "wp-config.php" -exec grep --color -iHn DB_NAME {} \; | perl
+}
+
 ########## BACKEND FUNCTIONS ##########
 function getWPinfo(){
 # Get info from the wp globals
@@ -148,6 +203,14 @@ dbprefix=$(wp --skip-plugins --skip-themes eval 'global $wpdb;echo $wpdb->prefix
 
 # Alternatly read in vars from wp-config.php
 #read -r dbhost dbname dbpass dbuser dbprefix <<< $(cat wp-config.php | egrep "^[^/].*[\"']DB_(NAME|USER|PASSWORD|HOST[^_])|table_prefix" | sort -d | sed "s/.*[\"']\(.*\)[\"'].*;.*/\1/" )
+}
+
+function wpconfigCheck(){
+if [ ! -f wp-config.php ]; then
+echo -e "$COL_MAGENTA
+WARNING:
+No wp-config.php file found. Make sure you are in a working WordPress directory! $COL_RESET"
+fi
 }
 
 function bashcolors(){
