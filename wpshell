@@ -182,7 +182,7 @@ esac
 
 ### CLEAN UP WPSHELL FILES ###
 function wpcleanup(){
-find ~/public_html*/ -maxdepth 5 \( -name "WPSHELL_*" -o -name ".WPSHELL_*" -o -name "wpshell" \)|xargs rm -rfv
+find ~/public_html*/ -maxdepth 5 \( -name "WPSHELL_*" -o -name ".WPSHELL_*" -o -name "wpshell" -o -name "wpshell.*" \)|xargs rm -rfv
 }
 
 ### Handy Extraction Program ###
