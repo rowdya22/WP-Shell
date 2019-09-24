@@ -1,23 +1,38 @@
 #!/bin/bash
 
+### COLORS ###
+ESC_SEQ="\x1b["
+COL_RESET=$ESC_SEQ"m"
+COL_RED=$ESC_SEQ"38;5;09;02m"
+COL_BLUE=$ESC_SEQ"38;5;27;02m"
+COL_MAGENTA=$ESC_SEQ"38;5;13;02m"
+COL_CYAN=$ESC_SEQ"38;5;14;02m"
+COL_ORANGE=$ESC_SEQ"38;5;208;02m"
+COL_WHITE=$ESC_SEQ"38;5;231;02m"
+
+### START EXAMPLE COLOR ###
+#echo -e "\x1b[38;5;{COLORID};01m TEXT  \x1b[m"
+### END EXAMPLE COLOR ###
+
 function wpshell(){
 clear
 echo -e "
-Type wpshell to return to this menu:                         
-   wpReplaceCore   - Scan for WP Version and Backup/Replace Core Files
-   coreLatest      - Backup/Replace WP Core Files With Latest Version
-   dbexport        - Export WP Database
+Type $COL_WHITE\"wpshell\"$COL_RESET to return to this menu:                         
+  $COL_WHITE wpReplaceCore $COL_RESET  - Scan for WP Version and Backup/Replace Core Files
+  $COL_WHITE coreLatest    $COL_RESET  - Backup/Replace WP Core Files With Latest Version
+  $COL_WHITE dbexport      $COL_RESET  - Export WP Database
   "
 }
 
+### REPLACE CORE WITH SAME VERSION ###
 function wpReplaceCore(){
 version=$(grep 'wp_version ' wp-includes/version.php | cut -d\' -f 2)
 
-echo -e "\rReplacing existing core with fresh $version files\n"
+echo -e "$COL_WHITE\rReplacing existing core with fresh $version files\n$COL_RESET"
 
 if [[ ! -e "wordpress-$version.tar.gz" ]]; then
 	if ! wget -q "https://wordpress.org/wordpress-$version.tar.gz"; then
-		echo -e "\rUnable to download wordpress-$version.tar.gz "
+		echo -e "$COL_RED\rUnable to download wordpress-$version.tar.gz $COL_RESET"
 		return 9
 	else echo "Downloaded wordpress-$version.tar.gz..."
 	fi
@@ -34,7 +49,7 @@ if [[ -z "$wpfiles" ]]; then
 	echo -e "No existing WordPress files found..."
 	else
 	oldWP="WPSHELL_CORE_$temp"
-	echo -e "Old WordPress files found! Moving them to $oldWP..."
+	echo -e "Old WordPress files found! Moving them to$COL_BLUE $oldWP... $COL_RESET"
 	mkdir "$oldWP"
 	while read -r f; do mv "$f" "$oldWP"; done <<< "$wpfiles"
 fi
@@ -51,24 +66,23 @@ fi
 if [[ -f "$oldWP/wp-config.php" ]]; then
 	cp "$oldWP/wp-config.php" .
  	### echo -e "Copied old wp-config.php back into place..."
-	echo -e "\rSuccess: Core replaced with stock $version files"
+	echo -e "$COL_WHITE\rSuccess:$COL_RESET Core replaced with stock $version files"
 	else
 	cp wp-config-sample.php wp-config.php
-	echo -e "\rWarning: No previous wp-config.php found! Used wp-config-sample.php..."
+	echo -e "$COL_RED\rWarning:$COL_RESET No previous wp-config.php found! Used wp-config-sample.php..."
 fi
-echo -e "\nCompressing old WordPress core..." && tar -zcf "$oldWP".tar.gz "$oldWP" --remove-files && echo -e "Success: Old WordPress files located $oldWP.tar.gz "
+echo -e "\nCompressing old WordPress core...$COL_WHITE" && tar -zcf "$oldWP".tar.gz "$oldWP" --remove-files && echo -e "Success:$COL_RESET Old WordPress files located$COL_BLUE $oldWP.tar.gz $COL_RESET"
 wp --skip-plugins --skip-themes core update-db --quiet
 }
-
 ### WGET LATEST ###
 function coreLatest() {
 ###  version=$(grep 'wp_version ' wp-includes/version.php | cut -d\' -f 2)
 
-echo -e "\rReplacing existing core with latest version\n"
+echo -e "$COL_WHITE\rReplacing existing core with latest version\n$COL_RESET"
 
 if [[ ! -e "wordpress-$wpver.tar.gz" ]]; then
 	if ! wget -q "https://wordpress.org/wordpress-latest.tar.gz"; then
-		echo -e "\rUnable to download wordpress-latest.tar.gz"
+		echo -e "$COL_RED\rUnable to download wordpress-latest.tar.gz $COL_RESET"
 		return 9
 	else echo "Downloaded wordpress-latest.tar.gz..."
 	fi
@@ -85,7 +99,7 @@ if [[ -z "$wpfiles" ]]; then
 	echo -e "No existing WordPress files found..."
 	else
 	oldWP="WPSHELL_CORE_$temp"
-	echo -e "Old WordPress files found! Moving them to $oldWP... "
+	echo -e "Old WordPress files found! Moving them to$COL_BLUE $oldWP... $COL_RESET"
 	mkdir "$oldWP"
 	while read -r f; do mv "$f" "$oldWP"; done <<< "$wpfiles"
 fi
@@ -102,12 +116,12 @@ fi
 if [[ -f "$oldWP/wp-config.php" ]]; then
 	cp "$oldWP/wp-config.php" .
 	### echo -e "Copied old wp-config.php back into place..."
-	echo -e "\rSuccess: Core updated to latest version"
+	echo -e "$COL_WHITE\rSuccess:$COL_RESET Core updated to latest version"
 	else
 	cp wp-config-sample.php wp-config.php
-	echo -e "\rWarning: No previous wp-config.php found! Used wp-config-sample.php..."
+	echo -e "$COL_RED\rWarning:$COL_RESET No previous wp-config.php found! Used wp-config-sample.php..."
 fi
-echo -e "\nCompressing old WordPress core..." && tar -zcf "$oldWP".tar.gz "$oldWP" --remove-files && echo -e "Success: Old WordPress files located $oldWP.tar.gz "
+echo -e "\nCompressing old WordPress core...$COL_WHITE" && tar -zcf "$oldWP".tar.gz "$oldWP" --remove-files && echo -e "Success:$COL_RESET Old WordPress files located$COL_BLUE $oldWP.tar.gz $COL_RESET"
 wp --skip-plugins --skip-themes core update-db --quiet
 }
 
@@ -134,3 +148,22 @@ dbprefix=$(wp --skip-plugins --skip-themes eval 'global $wpdb;echo $wpdb->prefix
 # Alternatly read in vars from wp-config.php
 #read -r dbhost dbname dbpass dbuser dbprefix <<< $(cat wp-config.php | egrep "^[^/].*[\"']DB_(NAME|USER|PASSWORD|HOST[^_])|table_prefix" | sort -d | sed "s/.*[\"']\(.*\)[\"'].*;.*/\1/" )
 }
+
+function bashcolors(){
+echo -e "
+$COL_RED \$COL_RED
+$COL_BLUE \$COL_BLUE
+$COL_MAGENTA \$COL_MAGENTA
+$COL_CYAN \$COL_CYAN
+$COL_ORANGE \$COL_ORANGE
+$COL_WHITE \$COL_WHITE
+$COL_RESET"
+}
+
+# Auto Remove WPSHELL script and like named files if you forget
+clean_up_files () { find ~/public_html*/ -maxdepth 5 \( -name "wpshell" -o -name "WPSHELL_*" \)|xargs rm -rf; }
+trap clean_up_files EXIT
+}
+
+### AUTO START ###
+wpshell
