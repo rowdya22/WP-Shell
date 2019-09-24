@@ -29,7 +29,7 @@ Type $COL_GREEN\"wpshell\"$COL_RESET to return to this menu:
 function wpReplaceCore(){
 version=$(grep 'wp_version ' wp-includes/version.php | cut -d\' -f 2)
 
-echo -e "$COL_WHITE\rReplacing existing core with fresh $version files\n$COL_RESET"
+echo -e "$COL_WHITE\rFound $version. Replacing existing core with fresh $version files\n$COL_RESET"
 
 if [[ ! -e "wordpress-$version.tar.gz" ]]; then
 	if ! wget -q "https://wordpress.org/wordpress-$version.tar.gz"; then
@@ -50,7 +50,7 @@ if [[ -z "$wpfiles" ]]; then
 	echo -e "No existing WordPress files found..."
 	else
 	oldWP="WPSHELL_CORE_$temp"
-	echo -e "Old WordPress files found! Moving them to$COL_CYAN$oldWP... $COL_RESET"
+	echo -e "Old WordPress files found! Moving them to$COL_CYAN $oldWP... $COL_RESET"
 	mkdir "$oldWP"
 	while read -r f; do mv "$f" "$oldWP"; done <<< "$wpfiles"
 fi
@@ -79,7 +79,7 @@ wp --skip-plugins --skip-themes core update-db --quiet
 function coreLatest() {
 ###  version=$(grep 'wp_version ' wp-includes/version.php | cut -d\' -f 2)
 
-echo -e "$COL_WHITE\rReplacing existing core with latest version\n$COL_RESET"
+echo -e "$COL_WHITE\rReplacing existing $version core with latest version\n$COL_RESET"
 
 if [[ ! -e "wordpress-$wpver.tar.gz" ]]; then
 	if ! wget -q "https://wordpress.org/wordpress-latest.tar.gz"; then
@@ -134,7 +134,7 @@ temp=$(date -u +"%Y_%m_%d-%H_%M")
 echo "Starting export..."
 file="$2"
 [[ -z "$file" ]] && file="WPSHELL_$dbname"_$temp.sql
-mysqldump -h "$dbhost" -u "$dbuser" -p"$dbpass" "$dbname" > "$file" && echo -e "$COL_GREEN\rExported database '$dbname' to file '$file'\n $COL_RESET" || echo -e "$COL_RED\rFailed to export database '$dbname' to file '$file'!\n $COL_RESET"
+mysqldump -h "$dbhost" -u "$dbuser" -p"$dbpass" "$dbname" > "$file" && echo -e "$COL_GREEN\rSuccess:$COL_RESET Exported database '$dbname' to file '$file'\n $COL_RESET" || echo -e "$COL_RED\rFailed to export database '$dbname' to file '$file'!\n $COL_RESET"
 }
 
 ########## BACKEND FUNCTIONS ##########
