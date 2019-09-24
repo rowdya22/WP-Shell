@@ -160,10 +160,5 @@ $COL_WHITE \$COL_WHITE
 $COL_RESET"
 }
 
-# Auto Remove WPSHELL script and like named files if you forget
-clean_up_files () { find ~/public_html*/ -maxdepth 5 \( -name "wpshell" -o -name "WPSHELL_*" \)|xargs rm -rf; }
-trap clean_up_files EXIT
-}
-
 ### AUTO START ###
 wpshell
