@@ -28,6 +28,7 @@ Type $COL_GREEN\"wpshell\"$COL_RESET to return to this menu:
   $COL_GREEN wpcorelatest $COL_RESET - Backup/Replace WP Core Files With Latest Version
   $COL_GREEN dblist       $COL_RESET - Search Below Folders and List WP DB Names
   $COL_GREEN dbxport      $COL_RESET - Export WP Database
+  $COL_GREEN wpplugin     $COL_RESET - Take Actions on Plugins
   $COL_GREEN ext          $COL_RESET - Extract Common File Types (Use: ext filename.ext)
   $COL_GREEN dirsize      $COL_RESET - Show Size of Directory
   $COL_GREEN fcount       $COL_RESET - List Number of Files in Current Directory
@@ -149,6 +150,35 @@ file="$2"
 mysqldump -h "$dbhost" -u "$dbuser" -p"$dbpass" "$dbname" > "$file" && echo -e "$COL_GREEN\rSuccess:$COL_RESET Exported database '$dbname' to file '$file'\n $COL_RESET" || echo -e "$COL_RED\rFailed to export database '$dbname' to file '$file'!\n $COL_RESET"
 }
 
+### Plugin Menu ###
+function wpplugin() {
+PLUGNUM=$(wp --skip-plugins --skip-themes plugin list | wc -l)
+ACTIVEPLUG=$(wp --skip-plugins --skip-themes plugin list | grep -w active | wc -l)
+TOTALPLUG=$(wp --skip-plugins --skip-themes plugin list | grep -w -E "inactive|active|must-use" | wc -l)
+
+echo -e "$COL_GREEN
+Active Plugins: $ACTIVEPLUG
+Total Plugins:  $TOTALPLUG
+$COL_RESET
+Plugin Options:
+(1) List
+(2) Activate/Deactivate
+(3) Deactivate All
+(4) Restore Active Plugins
+(5) Exit
+\tSelection: \c" ;
+
+read pluginSelect && echo ''
+case $pluginSelect in
+	1)	wpPluginList;; #List plugins in a table
+	2)	wpPluginToggle;; #Toggle plugins on and off
+	3)	wpPluginDeactivate;; #Save active plugin names to a file then deactivate all plugins
+	4)	wpPluginActivate;; #Activate plugins deactivated with wpPluginDeactivate then remove the file
+	5)	return;;
+	*)	invalidOption;;
+esac
+}
+
 ### CLEAN UP WPSHELL FILES ###
 function wpcleanup(){
 find ~/public_html*/ -maxdepth 5 \( -name "WPSHELL_*" -o -name ".WPSHELL_*" -o -name "wpshell" \)|xargs rm -rfv
@@ -203,6 +233,36 @@ dbprefix=$(wp --skip-plugins --skip-themes eval 'global $wpdb;echo $wpdb->prefix
 
 # Alternatly read in vars from wp-config.php
 #read -r dbhost dbname dbpass dbuser dbprefix <<< $(cat wp-config.php | egrep "^[^/].*[\"']DB_(NAME|USER|PASSWORD|HOST[^_])|table_prefix" | sort -d | sed "s/.*[\"']\(.*\)[\"'].*;.*/\1/" )
+}
+
+##### WPPLUGIN COMMANDS #####
+
+### PLUGIN LIST ###
+function wpPluginList(){
+wp --skip-plugins --skip-themes plugin list
+}
+### TOGGLE PLUGINS ###
+function wpPluginToggle(){
+echo -e "$COL_GREEN"
+wpPluginList
+echo -e "$COL_RESET
+What plugin(s) would you like to toggle? If multiple separate by spaces..."
+read PLUGINS
+wp --skip-plugins --skip-themes plugin toggle $PLUGINS
+}
+### DEACTIVATE PLUGINS ###
+function wpPluginDeactivate(){
+wp --skip-plugins --skip-themes plugin list --status=active --field=name >.WPSHELL_ACTIVEPLUGINS.txt
+
+wp --skip-plugins --skip-themes plugin deactivate --all
+}
+### ACTIVATE PLUGINS ###
+function wpPluginActivate(){
+ACTIVEPLUGINS=$(<.WPSHELL_ACTIVEPLUGINS.txt)
+
+wp --skip-plugins --skip-themes plugin activate $ACTIVEPLUGINS
+
+echo -e "$COL_GREEN\rAttempted plugin reactivation. If errors exist review .WPSHELL_ACTIVEPLUGINS.txt and activate manually. $COL_RESET"
 }
 
 function wpconfigCheck(){
