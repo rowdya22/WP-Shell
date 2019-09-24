@@ -23,6 +23,7 @@ echo -e "$COL_GREEN
 | | /| / / /_/ /\__ \/ /_/ / __/ / /   / /  
 | |/ |/ / ____/___/ / __  / /___/ /___/ /___
 |__/|__/_/    /____/_/ /_/_____/_____/_____/ $COL_RESET
+
 Type $COL_GREEN\"wpshell\"$COL_RESET to return to this menu:  
 
   $COL_GREEN wpreplacecore$COL_RESET - Scan for WP Version and Backup/Replace Core Files
