@@ -336,4 +336,4 @@ function RemoveTools(){ sleep 1; echo -e "$COL_MAGENTA\nAuto Removal of \"wpshel
 # ( sleep 1h; wpcleanup ) &
 
 ### AUTO START ###
-wpshell
+sleep 3; wpshell
