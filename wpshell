@@ -333,5 +333,5 @@ $COL_RESET"
 ### AUTO START ###
 wpshell
 ##### AUTO CLEANUP #####
-function RemoveTools(){ sleep 3; echo -e "$COL_MAGENTA\rAuto Removal of \"wpshell\" File $COL_RESET"; rm -rf wpshell; }
+function RemoveTools(){ sleep 3; echo -e "$COL_MAGENTA\nAuto Removal of \"wpshell\" File\n $COL_RESET"; rm -rf wpshell; echo -e"\n"; }
 ( RemoveTools ) &
