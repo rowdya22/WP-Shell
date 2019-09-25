@@ -31,6 +31,7 @@ Type $COL_GREEN\"wpshell\"$COL_RESET to return to this menu:
   $COL_GREEN dblist       $COL_RESET - Search Below Folders and List WP DB Names
   $COL_GREEN dbxport      $COL_RESET - Export WP Database
   $COL_GREEN wpplugin     $COL_RESET - Take Actions on Plugins
+  $COL_GREEN wpuser       $COL_RESET - Create Temp User (Delete with$COL_GREEN wpuserr$COL_RESET)
   $COL_GREEN ext          $COL_RESET - Extract Common File Types (Use: ext filename.ext)
   $COL_GREEN dirsize      $COL_RESET - Show Size of Directory
   $COL_GREEN fcount       $COL_RESET - List Number of Files in Current Directory
@@ -231,9 +232,9 @@ find -maxdepth 1 -mtime -10 -type f -iname "error_log*" -print0 | xargs -0 tail
 }
 
 ### CREATE TEMP USER HOSTADMIN ###
-function wpUserCreate(){
+function wpuser(){
 URL=$(wp --skip-plugins --skip-themes option get siteurl)
-NEWPASS="$(wp --skip-plugins --skip-themes user create HostAdmin HostAdmin@example.com --role=administrator | tail -1 | awk -F ':' '{ print $2 }')"
+NEWPASS="$(wp --skip-plugins --skip-themes user create HostAdmin HostAdmin@deleteme.com --role=administrator | tail -1 | awk -F ':' '{ print $2 }')"
 
 echo -e "$COL_GREEN
 Delete the user when done by running$COL_CYAN wpuserr$COL_RESET!
