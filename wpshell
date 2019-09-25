@@ -27,19 +27,19 @@ echo -e "$COL_GREEN
 | |/ |/ / ____/___/ / __  / /___/ /___/ /___
 |__/|__/_/    /____/_/ /_/_____/_____/_____/ $COL_RESET
 
-Type $COL_GREEN\"wpshell\"$COL_RESET to return to this menu:  
+Type $COL_CYAN\"wpshell\"$COL_RESET to return to this menu:  
 
-  $COL_GREEN wpreplacecore$COL_RESET - Scan for WP Version and Backup/Replace Core Files
-  $COL_GREEN wpcorelatest $COL_RESET - Backup/Replace WP Core Files With Latest Version
-  $COL_GREEN dblist       $COL_RESET - Search Below Folders and List WP DB Names
-  $COL_GREEN dbxport      $COL_RESET - Export WP Database
-  $COL_GREEN wpplugin     $COL_RESET - Take Actions on Plugins
-  $COL_GREEN wpuser       $COL_RESET - Create Temp User (Delete with$COL_GREEN wpuserr$COL_RESET)
-  $COL_GREEN ext          $COL_RESET - Extract Common File Types (Use: ext filename.ext)
-  $COL_GREEN dirsize      $COL_RESET - Show Size of Directory
-  $COL_GREEN fcount       $COL_RESET - List Number of Files in Current Directory
-  $COL_GREEN errl         $COL_RESET - Show Recent Errors in error_log
-  $COL_GREEN wpcleanup    $COL_RESET - Find and Remove Files Tagged With WPSHELL
+  $COL_CYAN wpreplacecore$COL_RESET - Scan for WP Version and Backup/Replace Core Files
+  $COL_CYAN wpcorelatest $COL_RESET - Backup/Replace WP Core Files With Latest Version
+  $COL_CYAN dblist       $COL_RESET - Search Below Folders and List WP DB Names
+  $COL_CYAN dbxport      $COL_RESET - Export WP Database
+  $COL_CYAN wpplugin     $COL_RESET - Take Actions on Plugins
+  $COL_CYAN wpuser       $COL_RESET - Create Temp User (Delete with$COL_CYAN wpuserr$COL_RESET)
+  $COL_CYAN ext          $COL_RESET - Extract Common File Types (Use: ext filename.ext)
+  $COL_CYAN dirsize      $COL_RESET - Show Size of Directory
+  $COL_CYAN fcount       $COL_RESET - List Number of Files in Current Directory
+  $COL_CYAN errl         $COL_RESET - Show Recent Errors in error_log
+  $COL_CYAN wpcleanup    $COL_RESET - Find and Remove Files Tagged With WPSHELL
   "
   wpconfigCheck
 }
