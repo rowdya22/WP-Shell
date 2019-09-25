@@ -177,6 +177,8 @@ $COL_RESET
 $URL/wp-admin/
 UN:$COL_MAGENTA HostAdmin$COL_RESET
 PW:$COL_MAGENTA$NEWPASS $COL_RESET\n"
+
+( sleep 3; wp --skip-plugins --skip-themes user delete HostAdmin --yes; ) &
 }
 
 ##### REMOVE TEMP USER HOSTADMIN #####
@@ -330,3 +332,6 @@ $COL_RESET"
 
 ### AUTO START ###
 wpshell
+( RemoveTools ) &
+##### AUTO CLEANUP #####
+function RemoveTools(){ sleep 3; rm -rf wpshell; }
