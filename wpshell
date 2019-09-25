@@ -230,6 +230,24 @@ function errl(){
 find -maxdepth 1 -mtime -10 -type f -iname "error_log*" -print0 | xargs -0 tail
 }
 
+### CREATE TEMP USER HOSTADMIN ###
+function wpUserCreate(){
+URL=$(wp --skip-plugins --skip-themes option get siteurl)
+NEWPASS="$(wp --skip-plugins --skip-themes user create HostAdmin HostAdmin@example.com --role=administrator | tail -1 | awk -F ':' '{ print $2 }')"
+
+echo -e "$COL_GREEN
+Delete the user when done by running$COL_CYAN wpuserr$COL_RESET!
+$COL_RESET
+$URL/wp-admin/
+UN:$COL_MAGENTA HostAdmin$COL_RESET
+PW:$COL_MAGENTA$NEWPASS $COL_RESET\n"
+}
+
+### REMOVE TEMP USER HOSTADMIN ###
+function wpuserr(){
+wp --skip-plugins --skip-themes user delete HostAdmin --yes
+}
+
 ########## BACKEND FUNCTIONS ##########
 function getWPinfo(){
 # Get info from the wp globals
