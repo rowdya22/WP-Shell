@@ -1,5 +1,6 @@
 #!/bin/bash
 
+########## START STARTUP FUNCTIONS ##########
 ### COLORS ###
 ESC_SEQ="\x1b["
 COL_RESET=$ESC_SEQ"m"
@@ -14,7 +15,9 @@ COL_WHITE=$ESC_SEQ"38;5;231;02m"
 ### START EXAMPLE COLOR ###
 #echo -e "\x1b[38;5;{COLORID};01m TEXT  \x1b[m"
 ### END EXAMPLE COLOR ###
+########## END STARTUP FUNCTIONS ##########
 
+########## START MAIN MENU ##########
 function wpshell(){
 clear
 echo -e "$COL_GREEN
@@ -40,8 +43,10 @@ Type $COL_GREEN\"wpshell\"$COL_RESET to return to this menu:
   "
   wpconfigCheck
 }
+########## END MAIN MENU ##########
 
-### REPLACE CORE WITH SAME VERSION ###
+########## START CORE OPTIONS ##########
+##### REPLACE CORE WITH SAME VERSION #####
 function wpreplacecore(){
 version=$(grep 'wp_version ' wp-includes/version.php | cut -d\' -f 2)
 
@@ -92,7 +97,7 @@ echo -e "\nCompressing old WordPress core...$COL_GREEN" && tar -zcf "$oldWP".tar
 wp --skip-plugins --skip-themes core update-db --quiet
 }
 
-### WGET LATEST ###
+##### WGET LATEST #####
 function wpcorelatest() {
 version=$(grep 'wp_version ' wp-includes/version.php | cut -d\' -f 2)
 
@@ -142,8 +147,10 @@ fi
 echo -e "\nCompressing old WordPress core...$COL_GREEN" && tar -zcf "$oldWP".tar.gz "$oldWP" --remove-files && echo -e "Success:$COL_RESET Old WordPress files located$COL_CYAN $oldWP.tar.gz $COL_RESET"
 wp --skip-plugins --skip-themes core update-db --quiet
 }
+########## END CORE OPTIONS ##########
 
-### EXPORT DATABASE ###
+########## START DB OPTIONS ##########
+##### EXPORT DATABASE #####
 function dbexport(){
 # Get info from the wp globals
 getWPinfo
@@ -154,7 +161,32 @@ file="$2"
 mysqldump -h "$dbhost" -u "$dbuser" -p"$dbpass" "$dbname" > "$file" && echo -e "$COL_GREEN\rSuccess:$COL_RESET Exported database '$dbname' to file '$file'\n $COL_RESET" || echo -e "$COL_RED\rFailed to export database '$dbname' to file '$file'!\n $COL_RESET"
 }
 
-### Plugin Menu ###
+##### LIST ALL WORDPRESS DATABASES #####
+function dblist() {
+find2perl -name "wp-config.php" -exec grep --color -iHn DB_NAME {} \; | perl
+}
+
+##### CREATE TEMP USER HOSTADMIN #####
+function wpuser(){
+URL=$(wp --skip-plugins --skip-themes option get siteurl)
+NEWPASS="$(wp --skip-plugins --skip-themes user create HostAdmin HostAdmin@deleteme.com --role=administrator | tail -1 | awk -F ':' '{ print $2 }')"
+
+echo -e "$COL_GREEN
+Delete the user when done by running$COL_CYAN wpuserr$COL_RESET!
+$COL_RESET
+$URL/wp-admin/
+UN:$COL_MAGENTA HostAdmin$COL_RESET
+PW:$COL_MAGENTA$NEWPASS $COL_RESET\n"
+}
+
+##### REMOVE TEMP USER HOSTADMIN #####
+function wpuserr(){
+wp --skip-plugins --skip-themes user delete HostAdmin --yes
+}
+########## END DB OPTIONS ##########
+
+########## START PLUGIN OPTIONS ##########
+##### Plugin Menu #####
 function wpplugin() {
 PLUGNUM=$(wp --skip-plugins --skip-themes plugin list | wc -l)
 ACTIVEPLUG=$(wp --skip-plugins --skip-themes plugin list | grep -w active | wc -l)
@@ -183,12 +215,46 @@ case $pluginSelect in
 esac
 }
 
-### CLEAN UP WPSHELL FILES ###
+##### WPPLUGIN MENU COMMANDS #####
+
+##### PLUGIN LIST #####
+function wpPluginList(){
+wp --skip-plugins --skip-themes plugin list
+}
+##### TOGGLE PLUGINS #####
+function wpPluginToggle(){
+echo -e "$COL_GREEN"
+wpPluginList
+echo -e "$COL_RESET
+What plugin(s) would you like to toggle? If multiple separate by spaces..."
+read PLUGINS
+wp --skip-plugins --skip-themes plugin toggle $PLUGINS
+}
+##### DEACTIVATE PLUGINS########
+function wpPluginDeactivate(){
+wp --skip-plugins --skip-themes plugin list --status=active --field=name >.WPSHELL_ACTIVEPLUGINS.txt
+
+wp --skip-plugins --skip-themes plugin deactivate --all
+}
+##### ACTIVATE PLUGINS #####
+function wpPluginActivate(){
+ACTIVEPLUGINS=$(<.WPSHELL_ACTIVEPLUGINS.txt)
+
+wp --skip-plugins --skip-themes plugin activate $ACTIVEPLUGINS
+
+echo -e "$COL_GREEN\rAttempted plugin reactivation. If errors exist review .WPSHELL_ACTIVEPLUGINS.txt and activate manually. $COL_RESET"
+}
+##### END WPPLUGIN MENU COMMANDS #####
+
+########## END PLUGIN OPTIONS ##########
+
+########## START HELPFUL SHORTCUTS ##########
+##### CLEAN UP WPSHELL FILES #####
 function wpcleanup(){
 find ~/public_html*/ -maxdepth 5 \( -name "WPSHELL_*" -o -name ".WPSHELL_*" -o -name "wpshell" -o -name "wpshell.*" \)|xargs rm -rfv
 }
 
-### Handy Extraction Program ###
+##### Handy Extraction Program #####
 function ext(){
     if [ -f $1 ] ; then
         case $1 in
@@ -211,45 +277,24 @@ function ext(){
     fi
 }
 
-### LIST SIZE OF CURRENT DIR ###
+##### LIST SIZE OF CURRENT DIR #####
 function dirsize() {
 du -ah --max-depth=1 | sort -h
 }
 
-### LIST NUMBER OF FILES IN CURRENT FOLDER ###
+##### LIST NUMBER OF FILES IN CURRENT FOLDER #####
 function fcount() {
 find -printf x|wc -c
 }
 
-### LIST ALL WORDPRESS DATABASES ###
-function dblist() {
-find2perl -name "wp-config.php" -exec grep --color -iHn DB_NAME {} \; | perl
-}
-
-### Find error logs modified in the last 10 days and show the last 10 lines
+##### Find error logs modified in the last 10 days and show the last 10 lines #####
 function errl(){
 find -maxdepth 1 -mtime -10 -type f -iname "error_log*" -print0 | xargs -0 tail
 }
+########## END HELPFUL SHORTCUTS ##########
 
-### CREATE TEMP USER HOSTADMIN ###
-function wpuser(){
-URL=$(wp --skip-plugins --skip-themes option get siteurl)
-NEWPASS="$(wp --skip-plugins --skip-themes user create HostAdmin HostAdmin@deleteme.com --role=administrator | tail -1 | awk -F ':' '{ print $2 }')"
 
-echo -e "$COL_GREEN
-Delete the user when done by running$COL_CYAN wpuserr$COL_RESET!
-$COL_RESET
-$URL/wp-admin/
-UN:$COL_MAGENTA HostAdmin$COL_RESET
-PW:$COL_MAGENTA$NEWPASS $COL_RESET\n"
-}
-
-### REMOVE TEMP USER HOSTADMIN ###
-function wpuserr(){
-wp --skip-plugins --skip-themes user delete HostAdmin --yes
-}
-
-########## BACKEND FUNCTIONS ##########
+########## START BACKEND FUNCTIONS ##########
 function getWPinfo(){
 # Get info from the wp globals
 dbname=$(wp --skip-plugins --skip-themes eval 'echo DB_NAME;') ;
@@ -260,36 +305,6 @@ dbprefix=$(wp --skip-plugins --skip-themes eval 'global $wpdb;echo $wpdb->prefix
 
 # Alternatly read in vars from wp-config.php
 #read -r dbhost dbname dbpass dbuser dbprefix <<< $(cat wp-config.php | egrep "^[^/].*[\"']DB_(NAME|USER|PASSWORD|HOST[^_])|table_prefix" | sort -d | sed "s/.*[\"']\(.*\)[\"'].*;.*/\1/" )
-}
-
-##### WPPLUGIN COMMANDS #####
-
-### PLUGIN LIST ###
-function wpPluginList(){
-wp --skip-plugins --skip-themes plugin list
-}
-### TOGGLE PLUGINS ###
-function wpPluginToggle(){
-echo -e "$COL_GREEN"
-wpPluginList
-echo -e "$COL_RESET
-What plugin(s) would you like to toggle? If multiple separate by spaces..."
-read PLUGINS
-wp --skip-plugins --skip-themes plugin toggle $PLUGINS
-}
-### DEACTIVATE PLUGINS ###
-function wpPluginDeactivate(){
-wp --skip-plugins --skip-themes plugin list --status=active --field=name >.WPSHELL_ACTIVEPLUGINS.txt
-
-wp --skip-plugins --skip-themes plugin deactivate --all
-}
-### ACTIVATE PLUGINS ###
-function wpPluginActivate(){
-ACTIVEPLUGINS=$(<.WPSHELL_ACTIVEPLUGINS.txt)
-
-wp --skip-plugins --skip-themes plugin activate $ACTIVEPLUGINS
-
-echo -e "$COL_GREEN\rAttempted plugin reactivation. If errors exist review .WPSHELL_ACTIVEPLUGINS.txt and activate manually. $COL_RESET"
 }
 
 function wpconfigCheck(){
@@ -311,6 +326,7 @@ $COL_ORANGE \$COL_ORANGE
 $COL_WHITE \$COL_WHITE
 $COL_RESET"
 }
+########## END BACKEND FUNCTIONS ##########
 
 ### AUTO START ###
 wpshell
