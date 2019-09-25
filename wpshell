@@ -178,7 +178,7 @@ $URL/wp-admin/
 UN:$COL_MAGENTA HostAdmin$COL_RESET
 PW:$COL_MAGENTA$NEWPASS $COL_RESET\n"
 
-( sleep 30m; echo -e "$COL_MAGENTA\nAuto Removal of Temp User Beginning...$COL_RESET"; wpuserr ; echo -e "$COL_MAGENTA\nCompleted. Press Enter to Continue...\n$COL_RESET"; ) &
+( sleep 30m; echo -e "$COL_MAGENTA\nAuto Removal of Temp User Beginning...$COL_RESET"; wpuserr ; echo -e "$COL_MAGENTA\nCompleted. Press Enter to Continue...$COL_RESET"; ) &
 }
 
 ##### REMOVE TEMP USER HOSTADMIN #####
@@ -333,6 +333,6 @@ $COL_RESET"
 ### AUTO START ###
 wpshell
 ##### AUTO CLEANUP #####
-function RemoveTools(){ sleep 3; echo -e "$COL_MAGENTA\n Auto Removal of \"wpshell\" File Beginning...\n $COL_RESET"; rm -rf wpshell; echo -e "$COL_MAGENTA\rCompleted. Press Enter to Continue...\n$COL_RESET"; }
+function RemoveTools(){ sleep 3; echo -e "$COL_MAGENTA\nAuto Removal of \"wpshell\" File Beginning...\n $COL_RESET"; rm -rf wpshell; echo -e "$COL_MAGENTA\rCompleted. Press Enter to Continue...$COL_RESET"; }
 ( RemoveTools ) &
 # ( sleep 1h; wpcleanup ) &
