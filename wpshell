@@ -486,7 +486,7 @@ wp --skip-plugins --skip-themes db optimize
 #################### ADDITIONAL FUNCTIONS ####################
 ### COUNT FILES IN CURRENT DIR ###
 function fcount() {
-find -printf x|wc -c
+du -a | cut -d/ -f2 | sort | uniq -c | sort -n
 }
 
 ### LIST SIZE OF CURRENT DIR ###
