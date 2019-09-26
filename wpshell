@@ -301,6 +301,7 @@ function wpPluginInstall(){
 echo -e "$COL_GREEN
 Recommended Plugins:
    really-simple-ssl
+   google-sitemap-generator
    sucuri-scanner
 $COL_RESET
 What plugin(s) would you like to install (and activate)? Enter slug separated by spaces..."
