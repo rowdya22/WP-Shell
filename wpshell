@@ -35,7 +35,6 @@ echo -e "$COL_GREEN
 
 Type $COL_CYAN\"wpshell\"$COL_RESET to return to this menu:  
 
-  $COL_CYAN wpstats $COL_GREEN  - Show Version, URL, DB Info, Number of Available Updates
   $COL_CYAN wpcore $COL_GREEN   - Check Versions, Verify Checksums, Replace Core Files
   $COL_CYAN wpdb $COL_GREEN     - Optimize and Repair, URL Rewrite
   $COL_CYAN wpcache $COL_GREEN  - Clear Common Caches
@@ -44,7 +43,7 @@ Type $COL_CYAN\"wpshell\"$COL_RESET to return to this menu:
   $COL_CYAN wpurl $COL_GREEN    - List and Change URLs
   $COL_CYAN wpuser $COL_GREEN   - Create User
   $COL_CYAN wpfix $COL_GREEN    - Run Fixes (Flush Permalinks/Cache, DB Cleanup)
-  $COL_CYAN wpbackup $COL_GREEN - Backup Files and Database to Folder or tar.gz
+  $COL_CYAN wpcleanup $COL_GREEN- Remove All WPSHELL Generated Files
   $COL_CYAN wpmore $COL_GREEN   - More Commands
 $COL_RESET"
 
@@ -55,15 +54,13 @@ maintCheck    # Checks for various Maintenance Mode Plugins
 function wpmore(){
 clear
 echo -e "$COL_GREEN
-WordPress Specific:
+  $COL_CYAN wpbackup $COL_GREEN - Backup ALL Files and Database to Folder or tar.gz
   $COL_CYAN dblist $COL_GREEN   - Lists Database Names and wp-config.php Locations
-  $COL_CYAN wpcleanup $COL_GREEN- Remove All WPSHELL Generated Files
 Helpful Functions:
   $COL_CYAN errl $COL_GREEN     - Show Last 10 Entries of error_log
   $COL_CYAN fcount $COL_GREEN   - Lists Number of Files in Current Directory
   $COL_CYAN dirsize $COL_GREEN  - Sorts Directory Contents by Size
   $COL_CYAN ext $COL_GREEN      - Handy Extraction Program (ext file.ext)
-Troubleshooting:
 "
 }
 #################### END START ####################
@@ -227,81 +224,7 @@ case $userSelect in
 esac
 }
 
-##### WPSTATS COMMANDS #####
-
-### SHOW GENERAL WORDPRESS INFORMATION ###
-function wpstats(){
-echo -e ""
-### START SITE TESTS ###
-### WPCLI CHECK
-CHECK=$(wp --skip-plugins --skip-themes core version | wc -l)
-
-if [ $CHECK == '1' ]; then
-	echo -e "$COL_GREEN\rWPCLI Check:$COL_CYAN    [OK] $COL_GREEN"
-else
-	echo -e "$COL_GREEN\rWPCLI Check:$COL_MAGENTA [FAILED] $COL_GREEN"
-fi
-
-### CHECKSUM VERIFICATION
-HACK=$(wp --skip-plugins --skip-themes core verify-checksums 2>&1 | wc -l)
-if [ $HACK == '1' ]; then
-        echo -e "$COL_GREEN\rChecksums:$COL_CYAN      [OK] $COL_GREEN"
-else
-        echo -e "$COL_GREEN\rChecksums:$COL_MAGENTA      [FAILED]   $HACK Files Do Not Verify"
-fi
-
-### EVAL PLUGINS/THEMES LOOKING FOR ERRORS
-wp --skip-plugins eval 'echo "\x1b[38;5;10;01m\rEval Plugins: \x1b[38;5;14;01m  [CHECK]\n \x1b[m";'
-wp --skip-themes eval 'echo "\x1b[38;5;10;01m\rEval Themes: \x1b[38;5;14;01m   [CHECK]\n \x1b[m";'
-### END SITE TESTS ###
-
-### START GENERAL INFO ###
-wpver=$(wp --skip-plugins --skip-themes core version)
-wpsiteurl=$(wp --skip-plugins --skip-themes option get siteurl)
-wphome=$(wp --skip-plugins --skip-themes option get home)
-wpstyle=$(wp --skip-plugins --skip-themes option get stylesheet)
-wptemplate=$(wp --skip-plugins --skip-themes option get template)
-
-echo -e "\n$COL_GREEN\rWP Version:    $COL_CYAN $wpver"
-echo -e "$COL_GREEN\rSite URL:      $COL_CYAN $wpsiteurl"
-echo -e "$COL_GREEN\rHome URL:      $COL_CYAN $wphome"
-echo -e "$COL_GREEN\rStylesheet:    $COL_CYAN $wpstyle"
-echo -e "$COL_GREEN\rTemplate:      $COL_CYAN $wptemplate"
-echo -e "$COL_GREEN"
-### END GENERAL INFO ###
-
-### START DATABASE INFO ###
-# Get info from the wp globals
-getWPinfo
-
-###START DB CONNECTION TEST
-wpconfigCheck
-mysql -u $dbuser -p"$dbpass" -e ";" >/dev/null 2>&1 && printf "Database Conn: $COL_CYAN Success $COL_GREEN \n" || printf "Database Conn: $COL_MAGENTA Failure $COL_GREEN \n"
-### END DB CONNECTION TEST
-echo -e "Database Name: $COL_CYAN $dbname $COL_GREEN"
-echo -e "Database User: $COL_CYAN $dbuser $COL_GREEN"
-echo -e "Database Pass: $COL_CYAN $dbpass $COL_GREEN"
-echo -e "Database Host: $COL_CYAN $dbhost $COL_GREEN"
-echo -e "Database Prfx: $COL_CYAN $dbprefix $COL_GREEN"
-### END DATABASE INFO ###
-
-### START UPDATES ###
-PLUGIN=$(wp --skip-plugins --skip-themes plugin list | grep -w available | wc -l)
-THEME=$(wp --skip-plugins --skip-themes theme list | grep -w available | wc -l)
-CORE=$(wp --skip-plugins --skip-themes core check-update | grep -w wordpress | wc -l)
-PLUGINTOTAL=$(wp --skip-plugins --skip-themes plugin list --field=name | wc -l)
-THEMETOTAL=$(wp --skip-plugins --skip-themes theme list --field=name | wc -l)
-
-echo -e "Core Updates:  $COL_CYAN $CORE $COL_GREEN"
-echo -e "Plugin Updates:$COL_CYAN $PLUGIN of $PLUGINTOTAL $COL_GREEN"
-echo -e "Theme Updates: $COL_CYAN $THEME of $THEMETOTAL $COL_RESET"
-### END UPDATE AND LIMITS ###
-echo -e "$COL_RESET"
-}
-##### END WPSTATS COMMANDS #####
-
 ##### WPCORE COMMANDS #####
-
 ### VERSION ###
 function wpCoreVersion(){
 wp --skip-plugins --skip-themes core version
@@ -322,9 +245,8 @@ fi
 #Check if wp-cli.yml (required file) exists, if not create it
 if [ ! -f wp-cli.yml ]; then echo -e "apache_modules:\n\t - mod_rewrite" > wp-cli.yml
 fi
-wp --skip-plugins --skip-themes rewrite structure $(wp --skip-plugins --skip-themes option get permalink_structure)
-wp --skip-plugins --skip-themes rewrite flush --hard
-echo -e "$COL_GREEN\rSuccess:$COL_RESET Rewrite Flushed."
+wp rewrite structure $(wp --skip-plugins --skip-themes option get permalink_structure)
+wp rewrite flush --hard
 }
 ##### END WPCORE COMMANDS #####
 
@@ -550,13 +472,12 @@ echo -e "Backing Up Files.....$COL_RESET"
 
 ### GENERAL FIXES ###
 function wpfix(){
-echo -e "$COL_BLUE
+echo -e "$COL_CYAN
 This could take a moment....$COL_RESET"
 wp --skip-plugins --skip-themes transient delete-expired
-# wp --skip-plugins --skip-themes media regenerate --yes --quiet
 wpRewriteFlush
 rmorphanmeta
-wp --skip-plugins --skip-themes cache flush
+wpcache
 wp --skip-plugins --skip-themes db repair
 wp --skip-plugins --skip-themes db optimize
 }
@@ -619,7 +540,7 @@ if [[ -z "$wpfiles" ]]; then
 	echo -e "No existing WordPress files found..."
 	else
 	oldWP="WPSHELL_CORE_$temp"
-	echo -e "Old WordPress files found! Moving them to$COL_BLUE $oldWP... $COL_RESET"
+	echo -e "Old WordPress files found! Moving them to$COL_CYAN $oldWP... $COL_RESET"
 	mkdir "$oldWP"
 	while read -r f; do mv "$f" "$oldWP"; done <<< "$wpfiles"
 fi
@@ -641,7 +562,7 @@ if [[ -f "$oldWP/wp-config.php" ]]; then
 	cp wp-config-sample.php wp-config.php
 	echo -e "$COL_CYAN\rWarning:$COL_RESET No previous wp-config.php found! Used wp-config-sample.php..."
 fi
-echo -e "\nCompressing old WordPress core...$COL_GREEN" && tar -zcf "$oldWP".tar.gz "$oldWP" --remove-files && echo -e "Success:$COL_RESET Old WordPress files located$COL_BLUE $oldWP.tar.gz $COL_RESET"
+echo -e "\nCompressing old WordPress core...$COL_GREEN" && tar -zcf "$oldWP".tar.gz "$oldWP" --remove-files && echo -e "Success:$COL_RESET Old WordPress files located$COL_CYAN $oldWP.tar.gz $COL_RESET"
 wp --skip-plugins --skip-themes core update-db --quiet
 }
 
