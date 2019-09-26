@@ -330,10 +330,5 @@ $COL_RESET"
 }
 ########## END BACKEND FUNCTIONS ##########
 
-##### AUTO CLEANUP #####
-# function RemoveTools(){ sleep 1; echo -e "$COL_MAGENTA\nAuto Removal of \"wpshell\" File Beginning...\n $COL_RESET"; rm -rf wpshell; echo -e "$COL_MAGENTA\rCompleted. Press Enter to Continue...$COL_RESET"; }
-# ( RemoveTools ) &
-# ( sleep 1h; wpcleanup ) &
-
 ### AUTO START ###
 sleep 3; wpshell
