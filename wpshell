@@ -48,7 +48,6 @@ Type $COL_CYAN\"wpshell\"$COL_RESET to return to this menu:
   $COL_CYAN wpmore $COL_GREEN   - More Commands
 $COL_RESET"
 
-wpshellChecks # Basic test for WP-CLI functionality
 wpconfigCheck # Check for wp-config.php file to confirm you're in the right directory
 maintCheck    # Checks for various Maintenance Mode Plugins
 }
@@ -682,22 +681,6 @@ dbprefix=$(wp --skip-plugins --skip-themes eval 'global $wpdb;echo $wpdb->prefix
 
 # Alternatly read in vars from wp-config.php
 #read -r dbhost dbname dbpass dbuser dbprefix <<< $(cat wp-config.php | egrep "^[^/].*[\"']DB_(NAME|USER|PASSWORD|HOST[^_])|table_prefix" | sort -d | sed "s/.*[\"']\(.*\)[\"'].*;.*/\1/" )
-}
-
-function wpshellChecks(){
-### ONLY RUN CHECKS IF IN WP DIRECTORY ###
-if [ -f wp-config.php ]; then
-
-### WPCLI FUNCTIONALITY CHECK ###
-CHECK=$(wp --skip-plugins --skip-themes core version | wc -l)
-# Output should be only one line. If not throw a warning as WP-CLI likely errored. #
-if [ $CHECK != '1' ]; then
-echo -e "$COL_MAGENTA
-WARNING WPCLI CHECK: [FAILED]
-WPCLI is having trouble working. Is WPCLI installed? Try using a temp install by running$COL_CYAN wpcliinstall $COL_RESET"
-fi
-### END WPCLI FUNCTIONALITY CHECK ###
-fi
 }
 
 function maintCheck(){
