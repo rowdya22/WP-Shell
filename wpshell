@@ -402,7 +402,7 @@ wp --skip-plugins --skip-themes user delete HostAdmin --yes
 ##### START WPSSL COMMANDS #####
 function wpRSSSL(){
 wp --skip-plugins --skip-themes plugin install really-simple-ssl --activate
-wp --skip-plugins --skip-themes rsssl activate_ssl 
+wp rsssl activate_ssl 
 wpcache
 }
 ##### END WPSSL COMMAND #####
