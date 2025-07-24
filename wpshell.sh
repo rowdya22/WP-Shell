@@ -17,57 +17,57 @@ unset HISTFILE
 shopt -s expand_aliases
 
 ########## GLOBAL FUNCTIONS START ##########
-
+# Prefix WPSHELL_ to variables to prevent issues
 WPSKIP="wp --skip-plugins --skip-themes"
 
-WPCLI_CHECK() { ${WPSKIP} core version 2>/dev/null | wc -l; }
-SITE_URL() { ${WPSKIP} option get siteurl; }
-CHECKSUMS() { ${WPSKIP} core verify-checksums 2>&1 | wc -l; }
+WPSHELL_WPCLI_CHECK() { ${WPSKIP} core version 2>/dev/null | wc -l; }
+WPSHELL_SITE_URL() { ${WPSKIP} option get siteurl; }
+WPSHELL_CHECKSUMS() { ${WPSKIP} core verify-checksums 2>&1 | wc -l; }
 
 # General Site Configuration
-WP_VERSION() { ${WPSKIP} core version; }
-HOME_URL() { ${WPSKIP} option get home; }
-STYLESHEET() { ${WPSKIP} option get stylesheet; }
-TEMPLATE() { ${WPSKIP} option get template; }
-WP_MEMORY_LIMIT() { ${WPSKIP} eval 'echo WP_MEMORY_LIMIT;' 2>/dev/null; }
-WP_MAX_MEMORY_LIMIT() { ${WPSKIP} eval 'echo WP_MAX_MEMORY_LIMIT;' 2>/dev/null; }
+WPSHELL_WP_VERSION() { ${WPSKIP} core version; }
+WPSHELL_HOME_URL() { ${WPSKIP} option get home; }
+WPSHELL_STYLESHEET() { ${WPSKIP} option get stylesheet; }
+WPSHELL_TEMPLATE() { ${WPSKIP} option get template; }
+WPSHELL_WP_MEMORY_LIMIT() { ${WPSKIP} eval 'echo WP_MEMORY_LIMIT;' 2>/dev/null; }
+WPSHELL_WP_MAX_MEMORY_LIMIT() { ${WPSKIP} eval 'echo WP_MAX_MEMORY_LIMIT;' 2>/dev/null; }
 
 # Update Counts
-COUNT_PLUGIN_UPDATES() { ${WPSKIP} plugin list | grep -c available; }
-COUNT_THEME_UPDATES() { ${WPSKIP} theme list | grep -c available; }
-COUNT_CORE_UPDATES() { ${WPSKIP} core check-update | grep -c wordpress; }
-COUNT_PLUGIN_TOTAL() { ${WPSKIP} plugin list --field=name | wc -l; }
-COUNT_THEME_TOTAL() { ${WPSKIP} theme list --field=name | wc -l; }
+WPSHELL_COUNT_PLUGIN_UPDATES() { ${WPSKIP} plugin list | grep -c available; }
+WPSHELL_COUNT_THEME_UPDATES() { ${WPSKIP} theme list | grep -c available; }
+WPSHELL_COUNT_CORE_UPDATES() { ${WPSKIP} core check-update | grep -c wordpress; }
+WPSHELL_COUNT_PLUGIN_TOTAL() { ${WPSKIP} plugin list --field=name | wc -l; }
+WPSHELL_COUNT_THEME_TOTAL() { ${WPSKIP} theme list --field=name | wc -l; }
 
 # PHP Environment
-PHP_VERSION() { php -r 'echo PHP_VERSION;' 2>/dev/null; }
-PHP_MEMORY_LIMIT() { php -r 'echo ini_get("memory_limit");' 2>/dev/null; }
-PHP_MAX_INPUT_VARS() { php -r 'echo ini_get("max_input_vars");' 2>/dev/null; }
+WPSHELL_PHP_VERSION() { php -r 'echo PHP_VERSION;' 2>/dev/null; }
+WPSHELL_PHP_MEMORY_LIMIT() { php -r 'echo ini_get("memory_limit");' 2>/dev/null; }
+WPSHELL_PHP_MAX_INPUT_VARS() { php -r 'echo ini_get("max_input_vars");' 2>/dev/null; }
 
 # Database Connection 
 DB_CONNECTION_DETAILS() {
   # Get WordPress DB credentials using WP constants via WP-CLI
-  DBNAME=$(${WPSKIP} eval 'echo DB_NAME;')
-  DBUSER=$(${WPSKIP} eval 'echo DB_USER;')
-  DBPASS=$(${WPSKIP} eval 'echo DB_PASSWORD;')
-  DBHOST=$(${WPSKIP} eval 'echo DB_HOST;')
-  DBPREFIX=$(${WPSKIP} eval 'global $wpdb; echo $wpdb->prefix;')
+  WPSHELL_DBNAME=$(${WPSKIP} eval 'echo DB_NAME;')
+  WPSHELL_DBUSER=$(${WPSKIP} eval 'echo DB_USER;')
+  WPSHELL_DBPASS=$(${WPSKIP} eval 'echo DB_PASSWORD;')
+  WPSHELL_DBHOST=$(${WPSKIP} eval 'echo DB_HOST;')
+  WPSHELL_DBPREFIX=$(${WPSKIP} eval 'global $wpdb; echo $wpdb->prefix;')
 
   # Test MySQL connection using retrieved credentials and store result in global var
-  if [ -n "${DBPASS}" ]; then
-    mysql -u "${DBUSER}" -p"${DBPASS}" -h "${DBHOST}" -e ";" >/dev/null 2>&1
+  if [ -n "${WPSHELL_DBPASS}" ]; then
+    mysql -u "${WPSHELL_DBUSER}" -p"${WPSHELL_DBPASS}" -h "${WPSHELL_DBHOST}" -e ";" >/dev/null 2>&1
   else
-    mysql -u "${DBUSER}" -h "${DBHOST}" -e ";" >/dev/null 2>&1
-  fi && DB_CONNECTION_STATUS="Success" || DB_CONNECTION_STATUS="Failure"
+    mysql -u "${WPSHELL_DBUSER}" -h "${WPSHELL_DBHOST}" -e ";" >/dev/null 2>&1
+  fi && WPSHELL_DB_CONNECTION_STATUS="Success" || WPSHELL_DB_CONNECTION_STATUS="Failure"
 }
 
 
 ########## GLOBAL FUNCTIONS END ##########
 
 ########## EMPHASIS AND COLORS START ##########
-TEXT_BOLD="\033[1m"
+WPSHELL_TEXT_BOLD="\033[1m"
 #TEXT_UNDERLINE="\033[4m"
-TEXT_RESET="\033[0m"
+WPSHELL_TEXT_RESET="\033[0m"
 ########## EMPHASIS AND COLORS END ##########
 
 ##### SAFETY CHECKS START #####
@@ -75,9 +75,9 @@ TEXT_RESET="\033[0m"
 function CheckWPCLI() {
 # Use WP-CLI to check the core version. A successful check returns one line. If not, prompt to install WP-CLI as the command likely failed. 
   if [ -f wp-config.php ]; then
-    if [ "${WPCLI_CHECK}" != "1" ]; then
-      echo -e "${TEXT_BOLD}WP-CLI CHECK: [FAILED]${TEXT_RESET}"
-      echo -e "Is WP-CLI installed? Try running: ${TEXT_BOLD}wpcliinstall${TEXT_RESET}"
+    if [ "${WPSHELL_WPCLI_CHECK}" != "1" ]; then
+      echo -e "${WPSHELL_TEXT_BOLD}WP-CLI CHECK: [FAILED]${WPSHELL_TEXT_RESET}"
+      echo -e "Is WP-CLI installed? Try running: ${WPSHELL_TEXT_BOLD}wpcliinstall${WPSHELL_TEXT_RESET}"
     fi
   fi
 }
@@ -85,16 +85,16 @@ function CheckWPCLI() {
 function CheckDirectory(){
 # Check for the existence of the wp-config.php file. Return warning if not found.
 if [ ! -f wp-config.php ]; then
-echo -e "${TEXT_BOLD}
+echo -e "${WPSHELL_TEXT_BOLD}
 WARNING:
-No wp-config.php file found. Most commands are designed to work from the WordPress directory!${TEXT_RESET}"
+No wp-config.php file found. Most commands are designed to work from the WordPress directory!${WPSHELL_TEXT_RESET}"
 fi
 }
 
 function CheckMaintenanceMode(){
 # Curl homepage checking for coming soon or maintenance mode
-curl -s "${SITE_URL}" | grep -qi 'coming soon\|maintenance' && echo -e "${TEXT_BOLD}
-MAINT CHECK: [FAILED] ${TEXT_RESET}
+curl -s "${WPSHELL_SITE_URL}" | grep -qi 'coming soon\|maintenance' && echo -e "${WPSHELL_TEXT_BOLD}
+MAINT CHECK: [FAILED] ${WPSHELL_TEXT_RESET}
 Keywords found on site that indicate it may have a coming soon page. Not all WP-CLI functions will work properly."
 }
 ##### SAFETY CHECKS END #####
@@ -105,25 +105,25 @@ Keywords found on site that indicate it may have a coming soon page. Not all WP-
 #################### MENU START ####################
 function wpshell(){
 clear
-echo -e "${TEXT_BOLD}
+echo -e "${WPSHELL_TEXT_BOLD}
   _      _____    ______       ____
  | | /| / / _ \  / __/ /  ___ / / /
  | |/ |/ / ___/ _\ \/ _ \/ -_) / / 
  |__/|__/_/    /___/_//_/\__/_/_/
-${TEXT_RESET}
-Type ${TEXT_BOLD}wpshell${TEXT_RESET} to return to this list of options:
-  ${TEXT_BOLD} wpstats ${TEXT_RESET}  - Show Version, URL, DB Info, Number of Available Updates
+${WPSHELL_TEXT_RESET}
+Type ${WPSHELL_TEXT_BOLD}wpshell${WPSHELL_TEXT_RESET} to return to this list of options:
+  ${WPSHELL_TEXT_BOLD} wpstats ${WPSHELL_TEXT_RESET}  - Show Version, URL, DB Info, Number of Available Updates
 
 WordPress Specific:
   
 Helpful Functions:
-  ${TEXT_BOLD} fcount ${TEXT_RESET}   - Lists Number of Files in Current Directory
-  ${TEXT_BOLD} dirsize ${TEXT_RESET}  - Sorts Directory Contents by Size
-  ${TEXT_BOLD} ext ${TEXT_RESET}      - Handy Extraction Program (ext file.ext)
+  ${WPSHELL_TEXT_BOLD} fcount ${WPSHELL_TEXT_RESET}   - Lists Number of Files in Current Directory
+  ${WPSHELL_TEXT_BOLD} dirsize ${WPSHELL_TEXT_RESET}  - Sorts Directory Contents by Size
+  ${WPSHELL_TEXT_BOLD} ext ${WPSHELL_TEXT_RESET}      - Handy Extraction Program (ext file.ext)
   
 Troubleshooting:
  
-${TEXT_RESET}"
+${WPSHELL_TEXT_RESET}"
 # Perform SAFETY CHECKS
 CheckWPCLI
 CheckDirectory
@@ -138,33 +138,33 @@ DB_CONNECTION_DETAILS
 # Output collected stats
 echo -e "
 ### SITE TESTS ###
-${TEXT_BOLD}WPCLI Check:${TEXT_RESET}      $([ "${WPCLI_CHECK}" -eq 1 ] && echo '[OK]' || echo '[FAILED]')
-${TEXT_BOLD}Checksums:${TEXT_RESET}        $([ "${CHECKSUMS}" -eq 1 ] && echo '[OK]' || echo "[FAILED] - ${CHECKSUMS} files differ")
+${WPSHELL_TEXT_BOLD}WPCLI Check:${WPSHELL_TEXT_RESET}      $([ "${WPSHELL_WPCLI_CHECK}" -eq 1 ] && echo '[OK]' || echo '[FAILED]')
+${WPSHELL_TEXT_BOLD}Checksums:${WPSHELL_TEXT_RESET}        $([ "${WPSHELL_CHECKSUMS}" -eq 1 ] && echo '[OK]' || echo "[FAILED] - ${WPSHELL_CHECKSUMS} files differ")
 
 ### GENERAL INFO ###
-${TEXT_BOLD}WP Version:${TEXT_RESET}       ${WP_VERSION}
-${TEXT_BOLD}Site URL:${TEXT_RESET}         ${SITE_URL}
-${TEXT_BOLD}Home URL:${TEXT_RESET}         ${HOME_URL}
-${TEXT_BOLD}Stylesheet:${TEXT_RESET}       ${STYLESHEET}
-${TEXT_BOLD}Template:${TEXT_RESET}         ${TEMPLATE}
+${WPSHELL_TEXT_BOLD}WP Version:${WPSHELL_TEXT_RESET}       ${WPSHELL_WP_VERSION}
+${WPSHELL_TEXT_BOLD}Site URL:${WPSHELL_TEXT_RESET}         ${WPSHELL_SITE_URL}
+${WPSHELL_TEXT_BOLD}Home URL:${WPSHELL_TEXT_RESET}         ${WPSHELL_HOME_URL}
+${WPSHELL_TEXT_BOLD}Stylesheet:${WPSHELL_TEXT_RESET}       ${WPSHELL_STYLESHEET}
+${WPSHELL_TEXT_BOLD}Template:${WPSHELL_TEXT_RESET}         ${WPSHELL_TEMPLATE}
 
 ### DATABASE INFO ###
-${TEXT_BOLD}Database Conn:${TEXT_RESET}    ${DB_CONNECTION_STATUS}
-${TEXT_BOLD}Database Name:${TEXT_RESET}    ${DBNAME}
-${TEXT_BOLD}Database User:${TEXT_RESET}    ${DBUSER}
-${TEXT_BOLD}Database Pass:${TEXT_RESET}    ${DBPASS}
-${TEXT_BOLD}Database Host:${TEXT_RESET}    ${DBHOST}
-${TEXT_BOLD}Database Prefix:${TEXT_RESET}  ${DBPREFIX}
+${WPSHELL_TEXT_BOLD}Database Conn:${WPSHELL_TEXT_RESET}    ${WPSHELL_DB_CONNECTION_STATUS}
+${WPSHELL_TEXT_BOLD}Database Name:${WPSHELL_TEXT_RESET}    ${WPSHELL_DBNAME}
+${WPSHELL_TEXT_BOLD}Database User:${WPSHELL_TEXT_RESET}    ${WPSHELL_DBUSER}
+${WPSHELL_TEXT_BOLD}Database Pass:${WPSHELL_TEXT_RESET}    ${WPSHELL_DBPASS}
+${WPSHELL_TEXT_BOLD}Database Host:${WPSHELL_TEXT_RESET}    ${WPSHELL_DBHOST}
+${WPSHELL_TEXT_BOLD}Database Prefix:${WPSHELL_TEXT_RESET}  ${WPSHELL_DBPREFIX}
 
 ### PHP & UPDATES ###
-${TEXT_BOLD}PHP Version:${TEXT_RESET}      ${PHP_VERSION}
-${TEXT_BOLD}Memory Limit:${TEXT_RESET}     ${PHP_MEMORY_LIMIT}
-${TEXT_BOLD}WP Memory Limit:${TEXT_RESET}  $(WP_MEMORY_LIMIT)
-${TEXT_BOLD}WP Max Memory:${TEXT_RESET}    $(WP_MAX_MEMORY_LIMIT)
-${TEXT_BOLD}Max Input Vars:${TEXT_RESET}   $(PHP_MAX_INPUT_VARS)
-${TEXT_BOLD}Core Updates:${TEXT_RESET}     ${COUNT_CORE_UPDATES}
-${TEXT_BOLD}Plugin Updates:${TEXT_RESET}   ${COUNT_PLUGIN_UPDATES} of ${COUNT_PLUGIN_TOTAL}
-${TEXT_BOLD}Theme Updates:${TEXT_RESET}    ${COUNT_THEME_UPDATES} of ${COUNT_THEME_TOTAL}
+${WPSHELL_TEXT_BOLD}PHP Version:${WPSHELL_TEXT_RESET}      ${WPSHELL_PHP_VERSION}
+${WPSHELL_TEXT_BOLD}Memory Limit:${WPSHELL_TEXT_RESET}     ${WPSHELL_PHP_MEMORY_LIMIT}
+${WPSHELL_TEXT_BOLD}WP Memory Limit:${WPSHELL_TEXT_RESET}  $(WPSHELL_WP_MEMORY_LIMIT)
+${WPSHELL_TEXT_BOLD}WP Max Memory:${WPSHELL_TEXT_RESET}    $(WPSHELL_WP_MAX_MEMORY_LIMIT)
+${WPSHELL_TEXT_BOLD}Max Input Vars:${WPSHELL_TEXT_RESET}   $(WPSHELL_PHP_MAX_INPUT_VARS)
+${WPSHELL_TEXT_BOLD}Core Updates:${WPSHELL_TEXT_RESET}     ${WPSHELL_COUNT_CORE_UPDATES}
+${WPSHELL_TEXT_BOLD}Plugin Updates:${WPSHELL_TEXT_RESET}   ${WPSHELL_COUNT_PLUGIN_UPDATES} of ${WPSHELL_COUNT_PLUGIN_TOTAL}
+${WPSHELL_TEXT_BOLD}Theme Updates:${WPSHELL_TEXT_RESET}    ${WPSHELL_COUNT_THEME_UPDATES} of ${WPSHELL_COUNT_THEME_TOTAL}
 "
 }
 
@@ -213,10 +213,10 @@ function ext() {
             *.zip)        unzip "$1"        ;;
             *.rar)        unrar x "$1"      ;;
             *.7z)         7z x "$1"         ;;
-            *) echo -e "${COL_BOLD}\nWarning:${TEXT_RESET} '$1' Unsupported Format!" ;;
+            *) echo -e "${WPSHELL_COL_BOLD}\nWarning:${WPSHELL_TEXT_RESET} '$1' Unsupported Format!" ;;
         esac
     else
-        echo -e "${COL_BOLD}'$1' is not a valid file.${TEXT_RESET} Syntax:\n  ext archive.tar.gz"
+        echo -e "${WPSHELL_COL_BOLD}'$1' is not a valid file.${WPSHELL_TEXT_RESET} Syntax:\n  ext archive.tar.gz"
     fi
 }
 
