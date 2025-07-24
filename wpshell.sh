@@ -43,51 +43,21 @@ PHP_MEMORY_LIMIT() { php -r 'echo ini_get("memory_limit");' 2>/dev/null; }
 
 # Database Connection 
 DB_CONNECTION_DETAILS() {
-  local wpconfig="wp-config.php"
-  local in_comment=0
+  # Get WordPress DB credentials using WP constants via WP-CLI
+  DBNAME=$(${WPSKIP} eval 'echo DB_NAME;')
+  DBUSER=$(${WPSKIP} eval 'echo DB_USER;')
+  DBPASS=$(${WPSKIP} eval 'echo DB_PASSWORD;')
+  DBHOST=$(${WPSKIP} eval 'echo DB_HOST;')
+  DBPREFIX=$(${WPSKIP} eval 'global $wpdb; echo $wpdb->prefix;')
 
-  extract_define() {
-    local key="$1"
-    awk -v key="$key" '
-      BEGIN { in_comment=0 }
-      /^\s*\/\*/ { in_comment=1 }
-      /\*\// { in_comment=0; next }
-      in_comment==1 { next }
-      /^\s*\/\// { next }
-      /^\s*#/ { next }
-      $0 ~ "define\\(\\s*'\''"key"'\''" {
-        match($0, /define\\(\\s*'\''"key"'\''\\s*,\\s*'\''([^'\'']+)'\''\\s*\\)/, m)
-        if (m[1]) print m[1]
-      }
-    ' "$wpconfig"
-  }
-
-  DBNAME=$(extract_define "DB_NAME")
-  DBUSER=$(extract_define "DB_USER")
-  DBPASS=$(extract_define "DB_PASSWORD")
-  DBHOST=$(extract_define "DB_HOST")
-
-  DBPREFIX=$(awk '
-    BEGIN { in_comment=0 }
-    /^\s*\/\*/ { in_comment=1 }
-    /\*\// { in_comment=0; next }
-    in_comment==1 { next }
-    /^\s*\/\// { next }
-    /^\s*#/ { next }
-    /^\s*\$table_prefix\s*=/ {
-      match($0, /\$table_prefix\s*=\s*'\''([^'\'']+)'\'';/, m)
-      if (m[1]) print m[1]
-    }
-  ' "$wpconfig")
-
-  export DBNAME DBUSER DBPASS DBHOST DBPREFIX
-
+  # Test MySQL connection using retrieved credentials and store result in global var
   if [ -n "${DBPASS}" ]; then
     mysql -u "${DBUSER}" -p"${DBPASS}" -h "${DBHOST}" -e ";" >/dev/null 2>&1
   else
     mysql -u "${DBUSER}" -h "${DBHOST}" -e ";" >/dev/null 2>&1
-  fi && echo "Success" || echo "Failure"
+  fi && DB_CONNECTION_STATUS="Success" || DB_CONNECTION_STATUS="Failure"
 }
+
 
 ########## GLOBAL FUNCTIONS END ##########
 
@@ -159,11 +129,11 @@ CheckMaintenanceMode
 #################### MENU END ####################
 
 function wpstats() {
-  # Get DB connection status and populate DB variables
-  DB_CONNECTION_STATUS=$(DB_CONNECTION_DETAILS)
+# Populate database credentials using WP-CLI constants
+DB_CONNECTION_DETAILS
 
-  # Output site tests results
-  echo -e "
+# Output collected stats
+echo -e "
 ### SITE TESTS ###
 ${TEXT_BOLD}WPCLI Check:${TEXT_RESET}      $([ "${WPCLI_CHECK}" -eq 1 ] && echo '[OK]' || echo '[FAILED]')
 ${TEXT_BOLD}Checksums:${TEXT_RESET}        $([ "${CHECKSUMS}" -eq 1 ] && echo '[OK]' || echo "[FAILED] - ${CHECKSUMS} files differ")
