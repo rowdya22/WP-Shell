@@ -41,46 +41,52 @@ COUNT_THEME_TOTAL() { ${WPSKIP} theme list --field=name | wc -l; }
 PHP_VERSION() { php -r 'echo PHP_VERSION;' 2>/dev/null; }
 PHP_MEMORY_LIMIT() { php -r 'echo ini_get("memory_limit");' 2>/dev/null; }
 
-# Database Connection (requires DBUSER and DBPASS to be set)
-DB_CONNECTION_STATUS() {
-  local DBUSER DBPASS DBHOST
+# Database Connection 
+DB_CONNECTION_DETAILS() {
+# Pull details from wp-config.php file and store for later use
+  local wpconfig="wp-config.php"
+  local in_comment=0
 
-  DBUSER=$(awk '
+  # Helper function to extract a DB define from wp-config.php ignoring comments
+  extract_define() {
+    local key="$1"
+    awk -v key="$key" '
+      BEGIN { in_comment=0 }
+      /^\s*\/\*/ { in_comment=1 }
+      /\*\// { in_comment=0; next }
+      in_comment==1 { next }
+      /^\s*\/\// { next }
+      /^\s*#/ { next }
+      $0 ~ "define\\(\\s*'\''"key"'\''" {
+        match($0, /define\\(\\s*'\''"key"'\''\\s*,\\s*'\''([^'\'']+)'\''\\s*\\)/, m)
+        if (m[1]) print m[1]
+      }
+    ' "$wpconfig"
+  }
+
+  # Extract DB values
+  DBNAME=$(extract_define "DB_NAME")
+  DBUSER=$(extract_define "DB_USER")
+  DBPASS=$(extract_define "DB_PASSWORD")
+  DBHOST=$(extract_define "DB_HOST")
+
+  # Extract $table_prefix ignoring commented lines
+  DBPREFIX=$(awk '
     BEGIN { in_comment=0 }
     /^\s*\/\*/ { in_comment=1 }
     /\*\// { in_comment=0; next }
-    in_comment == 1 { next }
+    in_comment==1 { next }
     /^\s*\/\// { next }
     /^\s*#/ { next }
-    /^\s*define\s*\(\s*'\''DB_USER'\''/ {
-      match($0, /'\''DB_USER'\''\s*,\s*'\''([^'\'']+)'\''/, m)
+    /^\s*\$table_prefix\s*=/ {
+      match($0, /\$table_prefix\s*=\s*'\''([^'\'']+)'\'';/, m)
       if (m[1]) print m[1]
-    }' wp-config.php)
+    }
+  ' "$wpconfig")
 
-  DBPASS=$(awk '
-    BEGIN { in_comment=0 }
-    /^\s*\/\*/ { in_comment=1 }
-    /\*\// { in_comment=0; next }
-    in_comment == 1 { next }
-    /^\s*\/\// { next }
-    /^\s*#/ { next }
-    /^\s*define\s*\(\s*'\''DB_PASSWORD'\''/ {
-      match($0, /'\''DB_PASSWORD'\''\s*,\s*'\''([^'\'']+)'\''/, m)
-      if (m[1]) print m[1]
-    }' wp-config.php)
+  export DBNAME DBUSER DBPASS DBHOST DBPREFIX
 
-  DBHOST=$(awk '
-    BEGIN { in_comment=0 }
-    /^\s*\/\*/ { in_comment=1 }
-    /\*\// { in_comment=0; next }
-    in_comment == 1 { next }
-    /^\s*\/\// { next }
-    /^\s*#/ { next }
-    /^\s*define\s*\(\s*'\''DB_HOST'\''/ {
-      match($0, /'\''DB_HOST'\''\s*,\s*'\''([^'\'']+)'\''/, m)
-      if (m[1]) print m[1]
-    }' wp-config.php)
-
+  # Check DB connection and output result
   mysql -u "${DBUSER}" -p"${DBPASS}" -h "${DBHOST}" -e ";" >/dev/null 2>&1 && echo "Success" || echo "Failure"
 }
 ########## GLOBAL FUNCTIONS END ##########
@@ -153,35 +159,36 @@ CheckMaintenanceMode
 #################### MENU END ####################
 
 function wpstats() {
-  echo -e "### SITE TESTS ###"
+  # Get DB connection status and populate DB variables
+  DB_CONNECTION_STATUS=$(DB_CONNECTION_DETAILS)
 
-  # WPCLI functional check
-${TEXT_BOLD}WPCLI Check:${TEXT_RESET}      $([ "$(WPCLI_CHECK)" -eq 1 ] && echo '[OK]' || echo '[FAILED]')
-  # Core file checksum validation
-${TEXT_BOLD}Checksums:${TEXT_RESET}        $([ "$(CHECKSUMS)" -eq 1 ] && echo '[OK]' || echo "[FAILED] - $(CHECKSUMS) files differ")
+  # Output site tests results
+  echo -e "
+### SITE TESTS ###
+${TEXT_BOLD}WPCLI Check:${TEXT_RESET}      $([ "${WPCLI_CHECK}" -eq 1 ] && echo '[OK]' || echo '[FAILED]')
+${TEXT_BOLD}Checksums:${TEXT_RESET}        $([ "${CHECKSUMS}" -eq 1 ] && echo '[OK]' || echo "[FAILED] - ${CHECKSUMS} files differ")
 
-echo -e "
 ### GENERAL INFO ###
-${TEXT_BOLD}WP Version:${TEXT_RESET}       $(WP_VERSION)
-${TEXT_BOLD}Site URL:${TEXT_RESET}         $(SITE_URL)
-${TEXT_BOLD}Home URL:${TEXT_RESET}         $(HOME_URL)
-${TEXT_BOLD}Stylesheet:${TEXT_RESET}       $(STYLESHEET)
-${TEXT_BOLD}Template:${TEXT_RESET}         $(TEMPLATE)
+${TEXT_BOLD}WP Version:${TEXT_RESET}       ${WP_VERSION}
+${TEXT_BOLD}Site URL:${TEXT_RESET}         ${SITE_URL}
+${TEXT_BOLD}Home URL:${TEXT_RESET}         ${HOME_URL}
+${TEXT_BOLD}Stylesheet:${TEXT_RESET}       ${STYLESHEET}
+${TEXT_BOLD}Template:${TEXT_RESET}         ${TEMPLATE}
 
 ### DATABASE INFO ###
-${TEXT_BOLD}Database Conn:${TEXT_RESET}    $(DB_CONNECTION_STATUS)
-${TEXT_BOLD}Database Name:${TEXT_RESET}    $(DBNAME)
-${TEXT_BOLD}Database User:${TEXT_RESET}    $(DBUSER)
-${TEXT_BOLD}Database Pass:${TEXT_RESET}    $(DBPASS)
-${TEXT_BOLD}Database Host:${TEXT_RESET}    $(DBHOST)
-${TEXT_BOLD}Database Prefix:${TEXT_RESET}  $(DBPREFIX)
+${TEXT_BOLD}Database Conn:${TEXT_RESET}    ${DB_CONNECTION_STATUS}
+${TEXT_BOLD}Database Name:${TEXT_RESET}    ${DBNAME}
+${TEXT_BOLD}Database User:${TEXT_RESET}    ${DBUSER}
+${TEXT_BOLD}Database Pass:${TEXT_RESET}    ${DBPASS}
+${TEXT_BOLD}Database Host:${TEXT_RESET}    ${DBHOST}
+${TEXT_BOLD}Database Prefix:${TEXT_RESET}  ${DBPREFIX}
 
 ### PHP & UPDATES ###
-${TEXT_BOLD}PHP Version:${TEXT_RESET}      $(PHP_VERSION)
-${TEXT_BOLD}Memory Limit:${TEXT_RESET}     $(PHP_MEMORY_LIMIT)
-${TEXT_BOLD}Core Updates:${TEXT_RESET}     $(COUNT_CORE_UPDATES)
-${TEXT_BOLD}Plugin Updates:${TEXT_RESET}   $(COUNT_PLUGIN_UPDATES) of $(COUNT_PLUGIN_TOTAL)
-${TEXT_BOLD}Theme Updates:${TEXT_RESET}    $(COUNT_THEME_UPDATES) of $(COUNT_THEME_TOTAL)
+${TEXT_BOLD}PHP Version:${TEXT_RESET}      ${PHP_VERSION}
+${TEXT_BOLD}Memory Limit:${TEXT_RESET}     ${PHP_MEMORY_LIMIT}
+${TEXT_BOLD}Core Updates:${TEXT_RESET}     ${COUNT_CORE_UPDATES}
+${TEXT_BOLD}Plugin Updates:${TEXT_RESET}   ${COUNT_PLUGIN_UPDATES} of ${COUNT_PLUGIN_TOTAL}
+${TEXT_BOLD}Theme Updates:${TEXT_RESET}    ${COUNT_THEME_UPDATES} of ${COUNT_THEME_TOTAL}
 "
 }
 
