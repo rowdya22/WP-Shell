@@ -29,6 +29,8 @@ WP_VERSION() { ${WPSKIP} core version; }
 HOME_URL() { ${WPSKIP} option get home; }
 STYLESHEET() { ${WPSKIP} option get stylesheet; }
 TEMPLATE() { ${WPSKIP} option get template; }
+WP_MEMORY_LIMIT() { ${WPSKIP} eval 'echo WP_MEMORY_LIMIT;' 2>/dev/null; }
+WP_MAX_MEMORY_LIMIT() { ${WPSKIP} eval 'echo WP_MAX_MEMORY_LIMIT;' 2>/dev/null; }
 
 # Update Counts
 COUNT_PLUGIN_UPDATES() { ${WPSKIP} plugin list | grep -c available; }
@@ -40,6 +42,7 @@ COUNT_THEME_TOTAL() { ${WPSKIP} theme list --field=name | wc -l; }
 # PHP Environment
 PHP_VERSION() { php -r 'echo PHP_VERSION;' 2>/dev/null; }
 PHP_MEMORY_LIMIT() { php -r 'echo ini_get("memory_limit");' 2>/dev/null; }
+PHP_MAX_INPUT_VARS() { php -r 'echo ini_get("max_input_vars");' 2>/dev/null; }
 
 # Database Connection 
 DB_CONNECTION_DETAILS() {
@@ -156,6 +159,9 @@ ${TEXT_BOLD}Database Prefix:${TEXT_RESET}  ${DBPREFIX}
 ### PHP & UPDATES ###
 ${TEXT_BOLD}PHP Version:${TEXT_RESET}      ${PHP_VERSION}
 ${TEXT_BOLD}Memory Limit:${TEXT_RESET}     ${PHP_MEMORY_LIMIT}
+${TEXT_BOLD}WP Memory Limit:${TEXT_RESET}  $(WP_MEMORY_LIMIT)
+${TEXT_BOLD}WP Max Memory:${TEXT_RESET}    $(WP_MAX_MEMORY_LIMIT)
+${TEXT_BOLD}Max Input Vars:${TEXT_RESET}   $(PHP_MAX_INPUT_VARS)
 ${TEXT_BOLD}Core Updates:${TEXT_RESET}     ${COUNT_CORE_UPDATES}
 ${TEXT_BOLD}Plugin Updates:${TEXT_RESET}   ${COUNT_PLUGIN_UPDATES} of ${COUNT_PLUGIN_TOTAL}
 ${TEXT_BOLD}Theme Updates:${TEXT_RESET}    ${COUNT_THEME_UPDATES} of ${COUNT_THEME_TOTAL}
