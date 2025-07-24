@@ -16,34 +16,74 @@ unset HISTFILE
 # Allows alias usage in scripts
 shopt -s expand_aliases
 
-########## GLOBALS START ##########
-WPSKIP="wp --skip-plugins --skip-themes" # Save me from manually typing this and use ${WPCLISKIP}
-WPCLI_CHECK=$(${WPSKIP} core version 2>/dev/null | wc -l) # This will return 1 if it completes successfully
-SITE_URL=$(${WPSKIP} option get siteurl) # Get the siteurl using WP-CLI
-CHECKSUMS=$(${WPSKIP} core verify-checksums 2>&1 | wc -l)  # Core file integrity check. This will return 1 if it completes successfully
-##### GENERAL SITE CONFIGURATION #####
-WP_VERSION=$(${WPSKIP} core version)
-SITE_URL=$(${WPSKIP} option get siteurl)
-HOME_URL=$(${WPSKIP} option get home)
-STYLESHEET=$(${WPSKIP} option get stylesheet)
-TEMPLATE=$(${WPSKIP} option get template)
+########## GLOBAL FUNCTIONS START ##########
 
-##### UPDATE COUNTS (core, plugins, themes) #####
-COUNT_PLUGIN_UPDATES=$(${WPSKIP} plugin list | grep -c available)
-COUNT_THEME_UPDATES=$(${WPSKIP} theme list | grep -c available)
-COUNT_CORE_UPDATES=$(${WPSKIP} core check-update | grep -c wordpress)
-COUNT_PLUGIN_TOTAL=$(${WPSKIP} plugin list --field=name | wc -l)
-COUNT_THEME_TOTAL=$(${WPSKIP} theme list --field=name | wc -l)
+WPSKIP="wp --skip-plugins --skip-themes"
 
-##### PHP ENVIRONMENT DETAILS #####
-PHP_VERSION=$(php -r 'echo PHP_VERSION;' 2>/dev/null)
-PHP_MEMORY_LIMIT=$(php -r 'echo ini_get("memory_limit");' 2>/dev/null)
+WPCLI_CHECK() { ${WPSKIP} core version 2>/dev/null | wc -l; }
+SITE_URL() { ${WPSKIP} option get siteurl; }
+CHECKSUMS() { ${WPSKIP} core verify-checksums 2>&1 | wc -l; }
 
-##### DATABASE INFO (requires helper functions) #####
-#getWPinfo # Should define DBNAME, DBUSER, DBPASS, DBHOST, DBPREFIX
-#wpconfigCheck # Optional: check wp-config.php connection info
-DB_CONNECTION_STATUS=$(mysql -u "${DBUSER}" -p"${DBPASS}" -e ";" >/dev/null 2>&1 && echo "Success" || echo "Failure")
-########## GLOBALS END ##########
+# General Site Configuration
+WP_VERSION() { ${WPSKIP} core version; }
+HOME_URL() { ${WPSKIP} option get home; }
+STYLESHEET() { ${WPSKIP} option get stylesheet; }
+TEMPLATE() { ${WPSKIP} option get template; }
+
+# Update Counts
+COUNT_PLUGIN_UPDATES() { ${WPSKIP} plugin list | grep -c available; }
+COUNT_THEME_UPDATES() { ${WPSKIP} theme list | grep -c available; }
+COUNT_CORE_UPDATES() { ${WPSKIP} core check-update | grep -c wordpress; }
+COUNT_PLUGIN_TOTAL() { ${WPSKIP} plugin list --field=name | wc -l; }
+COUNT_THEME_TOTAL() { ${WPSKIP} theme list --field=name | wc -l; }
+
+# PHP Environment
+PHP_VERSION() { php -r 'echo PHP_VERSION;' 2>/dev/null; }
+PHP_MEMORY_LIMIT() { php -r 'echo ini_get("memory_limit");' 2>/dev/null; }
+
+# Database Connection (requires DBUSER and DBPASS to be set)
+DB_CONNECTION_STATUS() {
+  local DBUSER DBPASS DBHOST
+
+  DBUSER=$(awk '
+    BEGIN { in_comment=0 }
+    /^\s*\/\*/ { in_comment=1 }
+    /\*\// { in_comment=0; next }
+    in_comment == 1 { next }
+    /^\s*\/\// { next }
+    /^\s*#/ { next }
+    /^\s*define\s*\(\s*'\''DB_USER'\''/ {
+      match($0, /'\''DB_USER'\''\s*,\s*'\''([^'\'']+)'\''/, m)
+      if (m[1]) print m[1]
+    }' wp-config.php)
+
+  DBPASS=$(awk '
+    BEGIN { in_comment=0 }
+    /^\s*\/\*/ { in_comment=1 }
+    /\*\// { in_comment=0; next }
+    in_comment == 1 { next }
+    /^\s*\/\// { next }
+    /^\s*#/ { next }
+    /^\s*define\s*\(\s*'\''DB_PASSWORD'\''/ {
+      match($0, /'\''DB_PASSWORD'\''\s*,\s*'\''([^'\'']+)'\''/, m)
+      if (m[1]) print m[1]
+    }' wp-config.php)
+
+  DBHOST=$(awk '
+    BEGIN { in_comment=0 }
+    /^\s*\/\*/ { in_comment=1 }
+    /\*\// { in_comment=0; next }
+    in_comment == 1 { next }
+    /^\s*\/\// { next }
+    /^\s*#/ { next }
+    /^\s*define\s*\(\s*'\''DB_HOST'\''/ {
+      match($0, /'\''DB_HOST'\''\s*,\s*'\''([^'\'']+)'\''/, m)
+      if (m[1]) print m[1]
+    }' wp-config.php)
+
+  mysql -u "${DBUSER}" -p"${DBPASS}" -h "${DBHOST}" -e ";" >/dev/null 2>&1 && echo "Success" || echo "Failure"
+}
+########## GLOBAL FUNCTIONS END ##########
 
 ########## EMPHASIS AND COLORS START ##########
 TEXT_BOLD="\033[1m"
@@ -208,3 +248,6 @@ function ext() {
 
 ########## SPECIFIC ##########
 #################### BASH FUNCTIONS END ####################
+
+# Show Menu on Launch
+wpshell
