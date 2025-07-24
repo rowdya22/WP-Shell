@@ -43,11 +43,9 @@ PHP_MEMORY_LIMIT() { php -r 'echo ini_get("memory_limit");' 2>/dev/null; }
 
 # Database Connection 
 DB_CONNECTION_DETAILS() {
-# Pull details from wp-config.php file and store for later use
   local wpconfig="wp-config.php"
   local in_comment=0
 
-  # Helper function to extract a DB define from wp-config.php ignoring comments
   extract_define() {
     local key="$1"
     awk -v key="$key" '
@@ -64,13 +62,11 @@ DB_CONNECTION_DETAILS() {
     ' "$wpconfig"
   }
 
-  # Extract DB values
   DBNAME=$(extract_define "DB_NAME")
   DBUSER=$(extract_define "DB_USER")
   DBPASS=$(extract_define "DB_PASSWORD")
   DBHOST=$(extract_define "DB_HOST")
 
-  # Extract $table_prefix ignoring commented lines
   DBPREFIX=$(awk '
     BEGIN { in_comment=0 }
     /^\s*\/\*/ { in_comment=1 }
@@ -86,9 +82,13 @@ DB_CONNECTION_DETAILS() {
 
   export DBNAME DBUSER DBPASS DBHOST DBPREFIX
 
-  # Check DB connection and output result
-  mysql -u "${DBUSER}" -p"${DBPASS}" -h "${DBHOST}" -e ";" >/dev/null 2>&1 && echo "Success" || echo "Failure"
+  if [ -n "${DBPASS}" ]; then
+    mysql -u "${DBUSER}" -p"${DBPASS}" -h "${DBHOST}" -e ";" >/dev/null 2>&1
+  else
+    mysql -u "${DBUSER}" -h "${DBHOST}" -e ";" >/dev/null 2>&1
+  fi && echo "Success" || echo "Failure"
 }
+
 ########## GLOBAL FUNCTIONS END ##########
 
 ########## EMPHASIS AND COLORS START ##########
