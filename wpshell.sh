@@ -19,7 +19,7 @@ shopt -s expand_aliases
 ########## GLOBAL FUNCTIONS START ##########
 # Prefix WPSHELL_ to variables to prevent issues
 WPSKIP="wp --skip-plugins --skip-themes" # Stop from having to include this all the time
-CLEAN_STRING="tr -d '[:space:]'" # Strip out spaces and newlines when needed
+#CLEAN_STRING="tr -d '[:space:]'" # Strip out spaces and newlines when needed
 
 WPSHELL_WPCLI_CHECK() { ${WPSKIP} core version 2>/dev/null | wc -l | ${CLEAN_STRING}; }
 WPSHELL_SITE_URL() { ${WPSKIP} option get siteurl | ${CLEAN_STRING}; }
@@ -135,11 +135,13 @@ CheckMaintenanceMode
 function wpstats() {
 # Populate DB credentials and test connection; sets globals like WPSHELL_DBNAME etc.
 DB_CONNECTION_DETAILS
+local WPCHECK_RESULT=$(WPSHELL_WPCLI_CHECK)
+local CHECKSUM_RESULT=$(WPSHELL_CHECKSUMS)
 
 echo -e "
 ### SITE TESTS ###
-${WPSHELL_TEXT_BOLD}WPCLI Check:${WPSHELL_TEXT_RESET}      $([ \"$(WPSHELL_WPCLI_CHECK)\" -eq 1 ] && echo '[OK]' || echo '[FAILED]')
-${WPSHELL_TEXT_BOLD}Checksums:${WPSHELL_TEXT_RESET}        $([ \"$(WPSHELL_CHECKSUMS)\" -eq 1 ] && echo '[OK]' || echo "[FAILED] - $(WPSHELL_CHECKSUMS) files differ")
+$([ "$WPCHECK_RESULT" -eq 1 ] && echo '[OK]' || echo '[FAILED]')
+$([ "$CHECKSUM_RESULT" -eq 1 ] && echo '[OK]' || echo "[FAILED] - $CHECKSUM_RESULT files differ")
 
 ### GENERAL INFO ###
 ${WPSHELL_TEXT_BOLD}WP Version:${WPSHELL_TEXT_RESET}       $(WPSHELL_WP_VERSION)
