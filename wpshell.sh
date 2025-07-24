@@ -17,49 +17,46 @@ unset HISTFILE
 shopt -s expand_aliases
 
 ########## GLOBAL FUNCTIONS START ##########
-# Prefix WPSHELL_ to variables to prevent issues
-WPSKIP="wp --skip-plugins --skip-themes" # Stop from having to include this all the time
-#CLEAN_STRING="tr -d '[:space:]'" # Strip out spaces and newlines when needed
+# WP-CLI wrapper with skip flags
+WPSKIP="wp --skip-plugins --skip-themes"
 
-WPSHELL_WPCLI_CHECK() { ${WPSKIP} core version 2>/dev/null | wc -l | ${CLEAN_STRING}; }
-WPSHELL_SITE_URL() { ${WPSKIP} option get siteurl | ${CLEAN_STRING}; }
-WPSHELL_CHECKSUMS() { ${WPSKIP} core verify-checksums 2>&1 | wc -l | ${CLEAN_STRING}; }
+# WP-CLI Checks
+WPSHELL_WPCLI_CHECK() { ${WPSKIP} core version 2>/dev/null | wc -l; }
+WPSHELL_CHECKSUMS() { ${WPSKIP} core verify-checksums 2>&1 | wc -l; }
 
 # General Site Configuration
-WPSHELL_WP_VERSION() { ${WPSKIP} core version | ${CLEAN_STRING}; }
-WPSHELL_HOME_URL() { ${WPSKIP} option get home | ${CLEAN_STRING}; }
-WPSHELL_STYLESHEET() { ${WPSKIP} option get stylesheet | ${CLEAN_STRING}; }
-WPSHELL_TEMPLATE() { ${WPSKIP} option get template | ${CLEAN_STRING}; }
-WPSHELL_WP_MEMORY_LIMIT() { ${WPSKIP} eval 'echo WP_MEMORY_LIMIT;' 2>/dev/null | ${CLEAN_STRING}; }
-WPSHELL_WP_MAX_MEMORY_LIMIT() { ${WPSKIP} eval 'echo WP_MAX_MEMORY_LIMIT;' 2>/dev/null | ${CLEAN_STRING}; }
+WPSHELL_SITE_URL() { ${WPSKIP} option get siteurl; }
+WPSHELL_HOME_URL() { ${WPSKIP} option get home; }
+WPSHELL_WP_VERSION() { ${WPSKIP} core version; }
+WPSHELL_STYLESHEET() { ${WPSKIP} option get stylesheet; }
+WPSHELL_TEMPLATE() { ${WPSKIP} option get template; }
+WPSHELL_WP_MEMORY_LIMIT() { ${WPSKIP} eval 'echo WP_MEMORY_LIMIT;' 2>/dev/null; }
+WPSHELL_WP_MAX_MEMORY_LIMIT() { ${WPSKIP} eval 'echo WP_MAX_MEMORY_LIMIT;' 2>/dev/null; }
 
 # Update Counts
-WPSHELL_COUNT_PLUGIN_UPDATES() { ${WPSKIP} plugin list | grep -c available | ${CLEAN_STRING}; }
-WPSHELL_COUNT_THEME_UPDATES() { ${WPSKIP} theme list | grep -c available | ${CLEAN_STRING}; }
-WPSHELL_COUNT_CORE_UPDATES() { ${WPSKIP} core check-update | grep -c wordpress | ${CLEAN_STRING}; }
-WPSHELL_COUNT_PLUGIN_TOTAL() { ${WPSKIP} plugin list --field=name | wc -l | ${CLEAN_STRING}; }
-WPSHELL_COUNT_THEME_TOTAL() { ${WPSKIP} theme list --field=name | wc -l | ${CLEAN_STRING}; }
+WPSHELL_COUNT_PLUGIN_UPDATES() { ${WPSKIP} plugin list | grep -c available; }
+WPSHELL_COUNT_THEME_UPDATES() { ${WPSKIP} theme list | grep -c available; }
+WPSHELL_COUNT_CORE_UPDATES() { ${WPSKIP} core check-update | grep -c wordpress; }
+WPSHELL_COUNT_PLUGIN_TOTAL() { ${WPSKIP} plugin list --field=name | wc -l; }
+WPSHELL_COUNT_THEME_TOTAL() { ${WPSKIP} theme list --field=name | wc -l; }
 
 # PHP Environment
-WPSHELL_PHP_VERSION() { php -r 'echo PHP_VERSION;' 2>/dev/null | ${CLEAN_STRING}; }
-WPSHELL_PHP_MEMORY_LIMIT() { php -r 'echo ini_get("memory_limit");' 2>/dev/null | ${CLEAN_STRING}; }
-WPSHELL_PHP_MAX_INPUT_VARS() { php -r 'echo ini_get("max_input_vars");' 2>/dev/null | ${CLEAN_STRING}; }
+WPSHELL_PHP_VERSION() { php -r 'echo PHP_VERSION;' 2>/dev/null; }
+WPSHELL_PHP_MEMORY_LIMIT() { php -r 'echo ini_get("memory_limit");' 2>/dev/null; }
+WPSHELL_PHP_MAX_INPUT_VARS() { php -r 'echo ini_get("max_input_vars");' 2>/dev/null; }
 
-# Database Connection 
+# Database Connection & Details
 DB_CONNECTION_DETAILS() {
-# Get WordPress DB credentials using WP constants via WP-CLI
-WPSHELL_DBNAME=$(${WPSKIP} eval 'echo DB_NAME;' | ${CLEAN_STRING})
-WPSHELL_DBUSER=$(${WPSKIP} eval 'echo DB_USER;' | ${CLEAN_STRING})
-WPSHELL_DBPASS=$(${WPSKIP} eval 'echo DB_PASSWORD;' | ${CLEAN_STRING})
-WPSHELL_DBHOST=$(${WPSKIP} eval 'echo DB_HOST;' | ${CLEAN_STRING})
-WPSHELL_DBPREFIX=$(${WPSKIP} eval 'global $wpdb; echo $wpdb->prefix;' | ${CLEAN_STRING})
-
-# Test MySQL connection using retrieved credentials and store result in global var
-if [ -n "${WPSHELL_DBPASS}" ]; then
-  mysql -u "${WPSHELL_DBUSER}" -p"${WPSHELL_DBPASS}" -h "${WPSHELL_DBHOST}" -e ";" >/dev/null 2>&1
-else
-  mysql -u "${WPSHELL_DBUSER}" -h "${WPSHELL_DBHOST}" -e ";" >/dev/null 2>&1
-fi && WPSHELL_DB_CONNECTION_STATUS="Success" || WPSHELL_DB_CONNECTION_STATUS="Failure"
+  WPSHELL_DBNAME=$(${WPSKIP} eval 'echo DB_NAME;')
+  WPSHELL_DBUSER=$(${WPSKIP} eval 'echo DB_USER;')
+  WPSHELL_DBPASS=$(${WPSKIP} eval 'echo DB_PASSWORD;')
+  WPSHELL_DBHOST=$(${WPSKIP} eval 'echo DB_HOST;')
+  WPSHELL_DBPREFIX=$(${WPSKIP} eval 'global $wpdb; echo $wpdb->prefix;')
+  if [ -n "${WPSHELL_DBPASS}" ]; then
+    mysql -u "${WPSHELL_DBUSER}" -p"${WPSHELL_DBPASS}" -h "${WPSHELL_DBHOST}" -e ";" >/dev/null 2>&1
+  else
+    mysql -u "${WPSHELL_DBUSER}" -h "${WPSHELL_DBHOST}" -e ";" >/dev/null 2>&1
+  fi && WPSHELL_DB_CONNECTION_STATUS="Success" || WPSHELL_DB_CONNECTION_STATUS="Failure"
 }
 ########## GLOBAL FUNCTIONS END ##########
 
