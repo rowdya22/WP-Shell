@@ -156,41 +156,32 @@ function wpstats() {
   echo -e "### SITE TESTS ###"
 
   # WPCLI functional check
-  if [ "${WPCLI_CHECK}" -eq 1 ]; then
-    echo -e "${TEXT_BOLD}WPCLI Check:${TEXT_RESET}      [OK]"
-  else
-    echo -e "${TEXT_BOLD}WPCLI Check:${TEXT_RESET}      [FAILED]"
-  fi
-
+${TEXT_BOLD}WPCLI Check:${TEXT_RESET}      $([ "$(WPCLI_CHECK)" -eq 1 ] && echo '[OK]' || echo '[FAILED]')
   # Core file checksum validation
-  if [ "${CHECKSUMS}" -eq 1 ]; then
-    echo -e "${TEXT_BOLD}Checksums:${TEXT_RESET}        [OK]"
-  else
-    echo -e "${TEXT_BOLD}Checksums:${TEXT_RESET}        [FAILED] - ${CHECKSUMS} files differ"
-  fi
+${TEXT_BOLD}Checksums:${TEXT_RESET}        $([ "$(CHECKSUMS)" -eq 1 ] && echo '[OK]' || echo "[FAILED] - $(CHECKSUMS) files differ")
 
-  echo -e "
+echo -e "
 ### GENERAL INFO ###
-${TEXT_BOLD}WP Version:${TEXT_RESET}       ${WP_VERSION}
-${TEXT_BOLD}Site URL:${TEXT_RESET}         ${SITE_URL}
-${TEXT_BOLD}Home URL:${TEXT_RESET}         ${HOME_URL}
-${TEXT_BOLD}Stylesheet:${TEXT_RESET}       ${STYLESHEET}
-${TEXT_BOLD}Template:${TEXT_RESET}         ${TEMPLATE}
+${TEXT_BOLD}WP Version:${TEXT_RESET}       $(WP_VERSION)
+${TEXT_BOLD}Site URL:${TEXT_RESET}         $(SITE_URL)
+${TEXT_BOLD}Home URL:${TEXT_RESET}         $(HOME_URL)
+${TEXT_BOLD}Stylesheet:${TEXT_RESET}       $(STYLESHEET)
+${TEXT_BOLD}Template:${TEXT_RESET}         $(TEMPLATE)
 
 ### DATABASE INFO ###
-${TEXT_BOLD}Database Conn:${TEXT_RESET}    ${DB_CONNECTION_STATUS}
-${TEXT_BOLD}Database Name:${TEXT_RESET}    ${DBNAME}
-${TEXT_BOLD}Database User:${TEXT_RESET}    ${DBUSER}
-${TEXT_BOLD}Database Pass:${TEXT_RESET}    ${DBPASS}
-${TEXT_BOLD}Database Host:${TEXT_RESET}    ${DBHOST}
-${TEXT_BOLD}Database Prefix:${TEXT_RESET}  ${DBPREFIX}
+${TEXT_BOLD}Database Conn:${TEXT_RESET}    $(DB_CONNECTION_STATUS)
+${TEXT_BOLD}Database Name:${TEXT_RESET}    $(DBNAME)
+${TEXT_BOLD}Database User:${TEXT_RESET}    $(DBUSER)
+${TEXT_BOLD}Database Pass:${TEXT_RESET}    $(DBPASS)
+${TEXT_BOLD}Database Host:${TEXT_RESET}    $(DBHOST)
+${TEXT_BOLD}Database Prefix:${TEXT_RESET}  $(DBPREFIX)
 
 ### PHP & UPDATES ###
-${TEXT_BOLD}PHP Version:${TEXT_RESET}      ${PHP_VERSION}
-${TEXT_BOLD}Memory Limit:${TEXT_RESET}     ${PHP_MEMORY_LIMIT}
-${TEXT_BOLD}Core Updates:${TEXT_RESET}     ${COUNT_CORE_UPDATES}
-${TEXT_BOLD}Plugin Updates:${TEXT_RESET}   ${COUNT_PLUGIN_UPDATES} of ${COUNT_PLUGIN_TOTAL}
-${TEXT_BOLD}Theme Updates:${TEXT_RESET}    ${COUNT_THEME_UPDATES} of ${COUNT_THEME_TOTAL}
+${TEXT_BOLD}PHP Version:${TEXT_RESET}      $(PHP_VERSION)
+${TEXT_BOLD}Memory Limit:${TEXT_RESET}     $(PHP_MEMORY_LIMIT)
+${TEXT_BOLD}Core Updates:${TEXT_RESET}     $(COUNT_CORE_UPDATES)
+${TEXT_BOLD}Plugin Updates:${TEXT_RESET}   $(COUNT_PLUGIN_UPDATES) of $(COUNT_PLUGIN_TOTAL)
+${TEXT_BOLD}Theme Updates:${TEXT_RESET}    $(COUNT_THEME_UPDATES) of $(COUNT_THEME_TOTAL)
 "
 }
 
