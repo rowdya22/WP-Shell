@@ -75,7 +75,7 @@ WPSHELL_TEXT_RESET="\033[0m"
 function CheckWPCLI() {
 # Use WP-CLI to check the core version. A successful check returns one line. If not, prompt to install WP-CLI as the command likely failed. 
   if [ -f wp-config.php ]; then
-    if [ "${WPSHELL_WPCLI_CHECK}" != "1" ]; then
+    if [ "$(WPSHELL_WPCLI_CHECK)" != "1" ]; then
       echo -e "${WPSHELL_TEXT_BOLD}WP-CLI CHECK: [FAILED]${WPSHELL_TEXT_RESET}"
       echo -e "Is WP-CLI installed? Try running: ${WPSHELL_TEXT_BOLD}wpcliinstall${WPSHELL_TEXT_RESET}"
     fi
