@@ -132,13 +132,11 @@ CheckMaintenanceMode
 function wpstats() {
 # Populate DB credentials and test connection; sets globals like WPSHELL_DBNAME etc.
 DB_CONNECTION_DETAILS
-local WPCHECK_RESULT=$(WPSHELL_WPCLI_CHECK)
-local CHECKSUM_RESULT=$(WPSHELL_CHECKSUMS)
 
 echo -e "
 ### SITE TESTS ###
-$([ "$WPCHECK_RESULT" -eq 1 ] && echo '[OK]' || echo '[FAILED]')
-$([ "$CHECKSUM_RESULT" -eq 1 ] && echo '[OK]' || echo "[FAILED] - $CHECKSUM_RESULT files differ")
+${WPSHELL_TEXT_BOLD}WP-CLI Check:${WPSHELL_TEXT_RESET}     $([ "$(WPSHELL_WPCLI_CHECK)" -eq 1 ] && echo '[OK]' || echo '[FAILED]')
+${WPSHELL_TEXT_BOLD}Checksums:${WPSHELL_TEXT_RESET}        $([ "$(WPSHELL_CHECKSUMS)" -eq 1 ] && echo '[VERIFIED]' || echo '[WARNING]')
 
 ### GENERAL INFO ###
 ${WPSHELL_TEXT_BOLD}WP Version:${WPSHELL_TEXT_RESET}       $(WPSHELL_WP_VERSION)
